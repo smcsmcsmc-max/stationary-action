@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>변분법 쉽게 이해하기</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
+  --accent:#2563eb; --true:#16a34a; --user:#e11d48; --warn:#b45309; --soft:#eef3ff; --code:#eef1f7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10141c; --card:#182030; --text:#e8ecf5; --muted:#a3adc2; --line:#2b3550;
+    --accent:#7aa2ff; --true:#4ade80; --user:#fb7185; --warn:#fbbf24; --soft:#1b2845; --code:#222c42;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR","Noto Sans CJK KR","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.8;font-size:17px}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.9rem;line-height:1.35;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:0 0 .6em;line-height:1.4}
+h2 .num{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;font-size:.85em;margin-right:.45em}
+@media (prefers-color-scheme: dark){h2 .num{color:#10141c}}
+p{margin:.6em 0}
+.sub{color:var(--muted);margin:0 0 1em}
+section,.summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+.summary{background:var(--soft);border-color:var(--accent)}
+.summary h2{margin-bottom:.3em}
+.summary ol{margin:.3em 0 0;padding-left:1.4em}
+.summary li{margin:.25em 0}
+.eq{background:var(--code);border-radius:10px;padding:12px 16px;margin:.8em 0;font-size:1.15rem;text-align:center;
+  font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;overflow-x:auto;white-space:nowrap}
+.eq small{display:block;font-family:inherit;font-size:.82rem;color:var(--muted);white-space:normal;margin-top:2px}
+.note{border-left:4px solid var(--warn);background:var(--code);padding:8px 14px;border-radius:0 8px 8px 0;margin:.9em 0;font-size:.95rem}
+.term{font-weight:700;color:var(--accent)}
+i.v{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.viz{display:grid;grid-template-columns:1fr;gap:14px}
+canvas{width:100%;display:block;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);margin:6px 2px}
+.legend b{display:inline-block;width:26px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;flex-wrap:wrap}
+.sl label span.val{font-variant-numeric:tabular-nums;font-weight:700}
+input[type=range]{width:100%;height:32px;accent-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+button{font:inherit;font-size:.95rem;padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer;font-weight:600}
+button:hover{background:var(--soft)}
+button.primary{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){button.primary{color:#10141c}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--code);border-radius:10px;padding:8px 12px}
+.readout .lab{font-size:.78rem;color:var(--muted);line-height:1.4}
+.readout .num{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:16px;background:var(--code);border-radius:8px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;width:0;background:var(--user);transition:width .08s}
+.verdict{font-weight:700;margin:6px 0;min-height:1.8em}
+.plotctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.92rem;margin:4px 0}
+select{font:inherit;font-size:.92rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+ul{padding-left:1.3em}
+li{margin:.3em 0}
+dl{margin:0}
+dt{font-weight:700;margin-top:.8em}
+dd{margin:0 0 0 .2em;color:var(--text)}
+
+nav.nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0}
+nav.nav a{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:.92rem;font-weight:600}
+nav.nav a:hover{background:var(--soft);border-color:var(--accent)}
+nav.nav a[aria-current=page]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (prefers-color-scheme: dark){nav.nav a[aria-current=page]{color:#10141c}}
+nav.nav a:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.eqs{margin:.5em 0}
+.step{border-left:4px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.step h3{margin:0 0 .2em;font-size:1.02rem}
+a.link{color:var(--accent);font-weight:700}
+.linkcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:.8em}
+.linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
+.linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
+.linkcards a:hover{background:var(--code)}
+footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="학습 시리즈">
+  <a href="index.html">① 정상 작용 원리</a>
+  <a href="variational-calculus.html" aria-current="page">② 변분법</a>
+  <a href="path-integral.html">③ 경로적분</a>
+</nav>
+<header>
+  <h1>📐 변분법: “경로 전체”를 바꿔 가며 최적을 찾는 수학</h1>
+  <p class="sub">정상 작용 원리를 수학적으로 뒷받침하는 도구예요. 식은 천천히, 하나씩 풀어 갈게요.</p>
+</header>
+
+<div class="summary" id="summary">
+  <h2>3줄 요약</h2>
+  <ol>
+    <li>변분법은 <b>함수(경로) 하나를 넣으면 숫자 하나가 나오는 “범함수”</b>의 최솟값·정상점을 찾는 수학이에요.</li>
+    <li>경로를 아주 조금 흔들어도 값이 변하지 않을 조건(첫 번째 변분 = 0)을 정리하면 <b>오일러–라그랑주 방정식</b> d/dx(∂F/∂y′) − ∂F/∂y = 0 이 나와요.</li>
+    <li>이 식 하나로 직선(최단경로), 사이클로이드(최단 시간 곡선), 뉴턴의 F = ma가 모두 나오고, 컴퓨터로는 경로를 점으로 쪼개 경사하강법으로도 풀 수 있어요.</li>
+  </ol>
+</div>
+
+<section id="pre">
+  <h2><span class="num">1</span>먼저 알아둘 것: 함수와 범함수</h2>
+  <ul>
+    <li><span class="term">함수</span>는 <b>숫자를 넣으면 숫자가 나오는</b> 규칙이에요. 예: <i class="v">f(x) = x²</i>에 3을 넣으면 9.</li>
+    <li><span class="term">범함수(functional)</span>는 <b>함수(=경로, 곡선)를 통째로 넣으면 숫자 하나가 나오는</b> 규칙이에요. 대괄호로 <i class="v">J[y]</i>처럼 써요. 예: 곡선의 길이<br>
+      <span class="eq" style="display:block">J[y] = ∫ √(1 + y′²) dx</span>
+      <i class="v">y′ = dy/dx</i>는 곡선의 기울기예요. 곡선 모양이 달라지면 길이도 달라지죠. 그래서 “곡선 → 길이(숫자)”인 범함수예요.</li>
+    <li>앞 페이지의 <b>작용 S</b>도 범함수예요. 경로 y(t)를 넣으면 숫자 S가 나와요.</li>
+  </ul>
+  <p>보통 함수의 최솟값은 <i class="v">f′(x) = 0</i>인 점에서 찾죠. 범함수에서는 “x를 조금 움직이기” 대신 “<b>경로를 조금 흔들기</b>”를 해요. 그게 다음 장의 주제예요.</p>
+</section>
+
+<section id="variation">
+  <h2><span class="num">2</span>첫 번째 변분이란?</h2>
+  <p>후보 경로 y(x)에 작은 흔들림을 더해 볼게요.</p>
+  <div class="eq">y<sub>ε</sub>(x) = y(x) + ε·η(x)<small>η(에타)는 흔들림의 모양, ε(엡실론)은 흔들림의 크기를 정하는 작은 수</small></div>
+  <p>양 끝점은 고정이라서 <b>η(a) = η(b) = 0</b>이어야 해요. 이제 <i class="v">J(ε) = J[y + εη]</i>는 ε 하나만의 평범한 함수가 돼요. 그래서 평범한 미분을 쓸 수 있어요.</p>
+  <div class="eq">δJ = dJ/dε |<sub>ε=0</sub><small>첫 번째 변분(first variation): 흔들림을 “1차로” 느끼는 정도</small></div>
+  <p>y가 정상점(최솟값 포함)이라면 어떤 흔들림 η를 줘도 <b>δJ = 0</b>이어야 해요. 골짜기 바닥에서는 어느 방향으로 살짝 움직여도 높이가 1차로는 안 변하는 것과 같아요. 이 δJ를 “η 앞의 계수”로 읽은 것이 <span class="term">범함수 도함수</span> δJ/δy예요: <i class="v">δJ = ∫ (δJ/δy)·η dx</i>.</p>
+</section>
+
+<section id="el">
+  <h2><span class="num">3</span>오일러–라그랑주 방정식, 한 단계씩 유도하기</h2>
+  <p>범함수가 <i class="v">J[y] = ∫<sub>a</sub><sup>b</sup> F(x, y, y′) dx</i> 꼴이라고 해 볼게요. (F는 x, y, y′로 이루어진 식. 작용에서는 F가 L = T − V예요.)</p>
+
+  <div class="step"><h3>단계 1 — 흔든 경로를 넣고 ε로 미분</h3>
+    <div class="eq">dJ/dε |<sub>ε=0</sub> = ∫ [ (∂F/∂y)·η + (∂F/∂y′)·η′ ] dx<small>합성함수의 미분(연쇄법칙): y가 η만큼, y′가 η′만큼 변하니까 두 항이 생겨요. ∂는 “다른 변수는 고정하고 한 변수로만 미분”이라는 기호예요.</small></div></div>
+
+  <div class="step"><h3>단계 2 — 둘째 항에 부분적분</h3>
+    <p>η′가 거슬리니 η만 남기고 싶어요. 부분적분 공식 <i class="v">∫u v′ = [uv] − ∫u′v</i>를 쓰면</p>
+    <div class="eq">∫ (∂F/∂y′)·η′ dx = [ (∂F/∂y′)·η ]<sub>a</sub><sup>b</sup> − ∫ d/dx(∂F/∂y′)·η dx</div></div>
+
+  <div class="step"><h3>단계 3 — 경계항이 사라진다</h3>
+    <p>양 끝에서 η(a) = η(b) = 0이므로 대괄호 항은 0이에요. 그래서</p>
+    <div class="eq">δJ = ∫ [ ∂F/∂y − d/dx(∂F/∂y′) ]·η dx = 0</div></div>
+
+  <div class="step"><h3>단계 4 — 기본 보조정리</h3>
+    <p><b>기본 보조정리</b>: 연속함수 g(x)가 끝점에서 0인 <b>모든</b> η에 대해 <i class="v">∫ g·η dx = 0</i>이면 g(x) ≡ 0이에요. 이유는 간단해요. 어떤 점 x₀에서 g(x₀) &gt; 0이라면, x₀ 근처에서만 양수이고 나머지는 0인 작은 “혹” 모양 η를 고를 수 있어요. 그러면 적분이 양수가 되어 모순이죠(g &lt; 0도 마찬가지).</p></div>
+
+  <div class="step"><h3>결과</h3>
+    <div class="eq" style="font-size:1.25rem">∂F/∂y − d/dx ( ∂F/∂y′ ) = 0<small>오일러–라그랑주(Euler–Lagrange) 방정식</small></div>
+    <p>역학에서는 독립변수가 시간 t, 경로가 q(t), F가 L(q, q̇, t)예요. 그래서 <i class="v">∂L/∂q − d/dt(∂L/∂q̇) = 0</i> (q̇ = dq/dt)로 써요.</p></div>
+</section>
+
+<section id="exA">
+  <h2><span class="num">4</span>예제 (a) 두 점 사이의 최단경로는 직선</h2>
+  <p>길이 범함수의 F는 <i class="v">F = √(1 + y′²)</i>예요. y가 직접 안 들어 있으니 <i class="v">∂F/∂y = 0</i>이고, <i class="v">∂F/∂y′ = y′ / √(1 + y′²)</i>예요. 오일러–라그랑주는</p>
+  <div class="eq">d/dx [ y′ / √(1 + y′²) ] = 0 &nbsp;⟹&nbsp; y′ / √(1 + y′²) = 상수 &nbsp;⟹&nbsp; y′ = 상수</div>
+  <p>기울기가 일정한 곡선은 <b>직선</b>이에요. 확인해 볼까요? 점 (0,0)에서 (1,1)까지, 직선 <i class="v">y = x</i>에 사인 모양 흔들림 두 개를 더해 보세요.</p>
+  <canvas id="cA" width="800" height="440" role="img" aria-label="직선과 흔든 곡선의 길이 비교"></canvas>
+  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>직선 y = x</span><span><b style="border-color:var(--user)"></b>흔든 곡선</span></div>
+  <div class="sl"><label for="eA1">흔들림 1: ε₁·sin(πx) <span class="val" id="eA1v">0.00</span></label><input type="range" id="eA1" min="-0.6" max="0.6" step="0.01" value="0.25"></div>
+  <div class="sl"><label for="eA2">흔들림 2: ε₂·sin(2πx) <span class="val" id="eA2v">0.00</span></label><input type="range" id="eA2" min="-0.6" max="0.6" step="0.01" value="0"></div>
+  <div class="readout" aria-live="polite">
+    <div><div class="lab">곡선의 길이 J</div><div class="num" id="LA">—</div></div>
+    <div><div class="lab">직선의 길이 √2</div><div class="num" id="LA0">—</div></div>
+    <div><div class="lab">차이 J − √2</div><div class="num" id="dLA">—</div></div>
+    <div><div class="lab">첫 번째 변분 (중심차분)</div><div class="num" id="vA" style="font-size:1rem">—</div></div>
+  </div>
+  <p class="verdict" id="verdictA"></p>
+  <p>어떻게 흔들어도 길이는 √2 ≈ 1.41421보다 길어져요. 또 맨 오른쪽 숫자처럼 <b>직선에서의 첫 번째 변분은 0</b>이에요(ε를 +와 −로 흔든 값을 비교해 구한 기울기). 길이는 ε에 대해 U자 모양이라 바닥에서 평평하죠.</p>
+</section>
+
+<section id="exB">
+  <h2><span class="num">5</span>예제 (b) 최단 시간 곡선(브라키스토크론)</h2>
+  <p>높은 점 A에서 공을 가만히 놓아 낮은 점 B까지 미끄러뜨릴 때, <b>어떤 곡선이 가장 빨리 도착할까요?</b> 직선이 가장 짧긴 하지만 가장 빠르진 않아요. 처음에 가파르게 내려가 속도를 붙이는 게 이득이거든요.</p>
+  <p>A를 원점으로, 아래쪽을 +y로 잡아요. 에너지 보존으로 y만큼 내려온 공의 속력은 <i class="v">v = √(2gy)</i>이고, 짧은 길이 ds를 지나는 시간은 ds/v예요. 그래서 걸리는 시간은 범함수</p>
+  <div class="eq">T[y] = ∫ √(1 + y′²) / √(2 g y) dx</div>
+  <p>예요. 여기서 F에는 x가 직접 들어 있지 않아서 오일러–라그랑주를 한 번 적분한 <span class="term">벨트라미 항등식</span> <i class="v">F − y′·∂F/∂y′</i> = 상수를 쓸 수 있어요. 풀면 <b>사이클로이드</b>(굴러가는 바퀴 테두리의 한 점이 그리는 곡선)가 나와요.</p>
+  <div class="eq">x = r(θ − sin θ), &nbsp; y = r(1 − cos θ)<small>θ는 바퀴가 구른 각도, r은 바퀴 반지름. 끝점 B에 맞게 r과 θ<sub>B</sub>를 정해요. 걸리는 시간은 θ<sub>B</sub>·√(r/g)</small></div>
+  <p>아래에서 A(0, 0) → B(2 m, 1 m)로 내려가는 세 경로를 비교해 보세요. <span style="color:var(--user);font-weight:700">빨간 곡선</span>은 <i class="v">y = 1·(x/2)<sup>p</sup></i> 꼴이고 p로 모양을 바꿔요(p = 1이면 직선, p &lt; 1이면 처음이 가파른 곡선). 시간은 위 범함수 T[y]를 수치 적분해서 구해요.</p>
+  <canvas id="cB" width="800" height="420" role="img" aria-label="직선, 거듭제곱 곡선, 사이클로이드를 따라 내려가는 공"></canvas>
+  <div class="legend"><span><b style="border-color:var(--accent)"></b>직선</span><span><b style="border-color:var(--user)"></b>내 곡선 (y = (x/2)<sup>p</sup>)</span><span><b style="border-color:var(--true)"></b>사이클로이드</span><span>가로 x(m), 아래쪽이 +y(m)</span></div>
+  <div class="sl"><label for="pB">경로 파라미터 p <span class="val" id="pBv">0.50</span></label><input type="range" id="pB" min="0.3" max="1.8" step="0.01" value="0.5"></div>
+  <div class="btns"><button class="primary" id="raceBtn" type="button">▶ 공 굴려 보기 (0.5배속)</button><button id="raceReset" type="button">처음으로</button></div>
+  <div class="readout" aria-live="polite">
+    <div><div class="lab" style="color:var(--accent)">직선 걸리는 시간</div><div class="num" id="tLine">—</div></div>
+    <div><div class="lab" style="color:var(--user)">내 곡선 걸리는 시간</div><div class="num" id="tPow">—</div></div>
+    <div><div class="lab" style="color:var(--true)">사이클로이드</div><div class="num" id="tCyc">—</div></div>
+    <div><div class="lab">경주 시계</div><div class="num" id="clockB">0.000 s</div></div>
+  </div>
+  <p class="verdict" id="verdictB"></p>
+  <p>p를 어떻게 바꿔도 사이클로이드(초록)보다 빠른 곡선은 없어요. 사이클로이드는 이 예에서 B보다 살짝 더 내려갔다가 올라오는데도 가장 빨라요. 속도를 일찍 얻는 이득이 더 크기 때문이에요.</p>
+</section>
+
+<section id="exC">
+  <h2><span class="num">6</span>예제 (c) 라그랑지안에서 F = ma 되찾기</h2>
+  <p>한 방향으로 움직이는 질량 m인 입자를 생각해요. <i class="v">L = T − V = ½·m·ẋ² − V(x)</i>. 오일러–라그랑주(<i class="v">∂L/∂x − d/dt(∂L/∂ẋ) = 0</i>)의 두 조각은</p>
+  <div class="eq">∂L/∂ẋ = m·ẋ, &nbsp;&nbsp; ∂L/∂x = −V′(x)</div>
+  <p>이니까 식에 넣으면 <i class="v">−V′(x) − d/dt(m·ẋ) = 0</i>, 즉</p>
+  <div class="eq" style="font-size:1.25rem">m·ẍ = −V′(x) = F<small>뉴턴의 운동법칙! (힘 F는 위치에너지를 내리막 방향으로 미분한 것)</small></div>
+  <ul>
+    <li><b>자유입자</b> (V = 0): <i class="v">m·ẍ = 0</i>. 가속도가 0이니 등속직선운동이에요.</li>
+    <li><b>용수철</b> (V = ½kx²): <i class="v">m·ẍ = −k·x</i>. 단순조화진동이에요. 해는 <i class="v">x = A·cos(ωt + φ), ω = √(k/m)</i>.</li>
+    <li><b>중력</b> (V = m·g·y): <i class="v">ÿ = −g</i>. 앞 페이지의 포물선이 바로 이 식의 해예요.</li>
+  </ul>
+</section>
+
+<section id="gd">
+  <h2><span class="num">7</span>컴퓨터로 해 보기: 경로를 점으로 쪼개 경사하강법</h2>
+  <p>컴퓨터는 연속 경로를 다룰 수 없어서 <b>N개 구간</b>으로 쪼개요. 시간 0~2초를 같은 간격 Δt로 나누고, 각 점의 높이 y₀, y₁, …, y<sub>N</sub>를 변수로 삼아요(양 끝 y₀ = y<sub>N</sub> = 0 고정). 작용은 이렇게 근사해요.</p>
+  <div class="eq" style="white-space:normal">S ≈ Σ Δt·[ ½m·((y<sub>i+1</sub> − y<sub>i</sub>)/Δt)² − m·g·(y<sub>i</sub> + y<sub>i+1</sub>)/2 ]</div>
+  <p>이제 S는 N − 1개 변수의 평범한 함수예요. 평범한 함수니까 <span class="term">경사하강법</span>(기울기의 반대 방향으로 조금씩 내려가기)을 쓸 수 있어요. 각 점의 기울기는 <i class="v">∂S/∂y<sub>i</sub> = (m/Δt)(2y<sub>i</sub> − y<sub>i−1</sub> − y<sub>i+1</sub>) − m·g·Δt</i>이고, 이 값이 0이라는 것은 <i class="v">(y<sub>i+1</sub> − 2y<sub>i</sub> + y<sub>i−1</sub>)/Δt² = −g</i>, 즉 “가속도 = −g”의 이산 버전이에요. 오일러–라그랑주 방정식이 그대로 나타나죠!</p>
+  <canvas id="cG" width="800" height="380" role="img" aria-label="무작위 경로가 경사하강법으로 포물선에 가까워지는 모습"></canvas>
+  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로(포물선)</span><span><b style="border-color:var(--user)"></b>현재 경로(점 = 변수 y<sub>i</sub>)</span></div>
+  <div class="sl"><label for="nG">점 개수(구간 수) N <span class="val" id="nGv">24</span></label><input type="range" id="nG" min="6" max="100" step="1" value="24"></div>
+  <div class="sl"><label for="spG">재생 속도 <span class="val" id="spGv">3</span></label><input type="range" id="spG" min="1" max="20" step="1" value="3"></div>
+  <div class="btns"><button class="primary" id="gStart" type="button">▶ 시작</button><button id="gPause" type="button">⏸ 일시정지</button><button id="gReset" type="button">↺ 새 무작위 경로</button></div>
+  <div class="readout" aria-live="polite">
+    <div><div class="lab">반복 횟수</div><div class="num" id="gIt">0</div></div>
+    <div><div class="lab">현재 작용 S</div><div class="num" id="gS">—</div></div>
+    <div><div class="lab">최솟값 S* (포물선)</div><div class="num" id="gS0">—</div></div>
+    <div><div class="lab">진짜 경로와 최대 차이</div><div class="num" id="gDev">—</div></div>
+  </div>
+  <p class="verdict" id="verdictG"></p>
+  <div class="note">N이 클수록 정확하지만 큰 흔들림을 펴는 데 더 오래 걸려요(경사하강법은 부드러운 큰 굽이를 가장 늦게 펴요). 이 방법은 <b>S가 최소인 경우</b>에만 쓸 수 있는 방법이에요. 정상점이 최솟값이 아닐 때(안장점)는 다른 방법(예: 뉴턴법)이 필요해요.</div>
+</section>
+
+<section id="next">
+  <h2><span class="num">8</span>다음 단계</h2>
+  <ul>
+    <li><b>구속조건과 라그랑주 승수</b>: “길이가 일정한 줄이 만드는 모양(현수선)”처럼 조건이 붙은 문제는 조건 × 승수(λ)를 범함수에 더해서 똑같이 풀어요.</li>
+    <li><b>뇌터(Noether) 정리</b>: 작용이 어떤 변환(시간 이동, 공간 이동, 회전)에 대해 변하지 않으면, 그에 대응하는 보존량(에너지, 운동량, 각운동량)이 생겨요.</li>
+    <li>이어서 <a class="link" href="path-integral.html">③ 경로적분</a>에서 양자역학이 이 원리를 어떻게 확장하는지 볼 수 있어요.</li>
+  </ul>
+</section>
+
+<section id="glossary">
+  <h2><span class="num">9</span>용어 정리</h2>
+  <dl>
+    <dt>함수 / 범함수</dt><dd>함수는 숫자 → 숫자, 범함수는 함수(경로) → 숫자.</dd>
+    <dt>변분(variation)</dt><dd>경로를 조금 바꾸는 것, 또는 그에 따른 범함수의 변화.</dd>
+    <dt>첫 번째 변분 δJ</dt><dd>흔들림 크기 ε에 대한 J의 1차 변화율. 정상점에서 0.</dd>
+    <dt>흔들림 η</dt><dd>경로에 더하는 작은 모양. 끝점에서는 0.</dd>
+    <dt>부분적분</dt><dd>미분을 곱의 다른 쪽으로 옮기는 적분 기술. ∫u v′ = [uv] − ∫u′v.</dd>
+    <dt>기본 보조정리</dt><dd>모든 η에 대해 ∫gη = 0이면 g = 0.</dd>
+    <dt>오일러–라그랑주 방정식</dt><dd>정상점이 되기 위한 조건식. ∂F/∂y − d/dx(∂F/∂y′) = 0.</dd>
+    <dt>벨트라미 항등식</dt><dd>F가 x를 직접 포함하지 않을 때 F − y′∂F/∂y′ = 상수.</dd>
+    <dt>사이클로이드</dt><dd>굴러가는 바퀴 테두리 한 점의 자취. 최단 시간 곡선.</dd>
+    <dt>경사하강법</dt><dd>기울기의 반대 방향으로 조금씩 움직여 최솟값을 찾는 방법.</dd>
+    <dt>구속조건 / 라그랑주 승수</dt><dd>문제에 붙는 제약, 그리고 이를 다루는 도우미 변수 λ.</dd>
+  </dl>
+</section>
+
+<footer>이 페이지는 인터넷 연결 없이 이 파일 하나로 동작해요. · 사용 값: g = 9.8, m = 1</footer>
+
+</main>
+<script>
+//CORE-START
+const G = 9.8, M = 1, TT = 2;
+// (a) length of y = x + e1 sin(pi x) + e2 sin(2 pi x) on [0,1]
+function curveLength(e1, e2, N){
+  N = N || 4000; const dx = 1 / N; let L = 0;
+  for (let i = 0; i < N; i++){
+    const x = (i + 0.5) * dx;
+    const yp = 1 + e1 * Math.PI * Math.cos(Math.PI * x) + e2 * 2 * Math.PI * Math.cos(2 * Math.PI * x);
+    L += Math.sqrt(1 + yp * yp) * dx;
+  }
+  return L;
+}
+// (b) descent time functional T[y] = ∫ sqrt(1+y'^2)/sqrt(2 g y) dx  (y measured downward), parametric form
+const BX = 2, BY = 1;
+function solveCycloid(xB, yB){
+  const target = yB / xB;
+  const f = th => (1 - Math.cos(th)) / (th - Math.sin(th));
+  let lo = 1e-6, hi = 2 * Math.PI - 1e-6;
+  for (let i = 0; i < 200; i++){ const mid = 0.5 * (lo + hi); if (f(mid) > target) lo = mid; else hi = mid; }
+  const th = 0.5 * (lo + hi);
+  return { th: th, r: yB / (1 - Math.cos(th)) };
+}
+function pathPower(p, m){
+  m = m || 12;
+  return { x: u => BX * Math.pow(u, m), y: u => BY * Math.pow(u, m * p),
+           dx: u => BX * m * Math.pow(u, m - 1), dy: u => BY * m * p * Math.pow(u, m * p - 1) };
+}
+function pathCycloid(){
+  const c = solveCycloid(BX, BY), r = c.r, th = c.th;
+  return { x: u => r * (th * u - Math.sin(th * u)), y: u => r * (1 - Math.cos(th * u)),
+           dx: u => r * th * (1 - Math.cos(th * u)), dy: u => r * th * Math.sin(th * u), r: r, th: th };
+}
+function descentTime(P, N){
+  N = N || 40000; let s = 0;
+  for (let i = 0; i < N; i++){
+    const u = (i + 0.5) / N;
+    s += Math.hypot(P.dx(u), P.dy(u)) / Math.sqrt(2 * G * P.y(u)) / N;
+  }
+  return s;
+}
+function timeTable(P, N){
+  N = N || 3000; const t = [0], x = [P.x(0)], y = [P.y(0)];
+  for (let i = 0; i < N; i++){
+    const um = (i + 0.5) / N, u1 = (i + 1) / N;
+    t.push(t[i] + Math.hypot(P.dx(um), P.dy(um)) / Math.sqrt(2 * G * P.y(um)) / N);
+    x.push(P.x(u1)); y.push(P.y(u1));
+  }
+  return { t: t, x: x, y: y };
+}
+function lookup(tab, tau){
+  const t = tab.t, n = t.length - 1;
+  if (tau <= 0) return [tab.x[0], tab.y[0]];
+  if (tau >= t[n]) return [tab.x[n], tab.y[n]];
+  let lo = 0, hi = n;
+  while (hi - lo > 1){ const mid = (lo + hi) >> 1; if (t[mid] <= tau) lo = mid; else hi = mid; }
+  const f = (tau - t[lo]) / (t[hi] - t[lo]);
+  return [tab.x[lo] + f * (tab.x[hi] - tab.x[lo]), tab.y[lo] + f * (tab.y[hi] - tab.y[lo])];
+}
+// (c)/(demo) discretized action for y(t), y_0 = y_N = 0
+function discAction(y){
+  const N = y.length - 1, dt = TT / N; let S = 0;
+  for (let i = 0; i < N; i++){
+    const v = (y[i + 1] - y[i]) / dt;
+    S += dt * (0.5 * M * v * v - M * G * 0.5 * (y[i] + y[i + 1]));
+  }
+  return S;
+}
+function parabolaNodes(N){
+  const y = []; for (let i = 0; i <= N; i++){ const t = TT * i / N; y.push(0.5 * G * t * (TT - t)); } return y;
+}
+function gradStep(y, lr){
+  const N = y.length - 1, dt = TT / N, g = new Array(N + 1).fill(0);
+  for (let i = 1; i < N; i++) g[i] = (M / dt) * (2 * y[i] - y[i - 1] - y[i + 1]) - M * G * dt;
+  for (let i = 1; i < N; i++) y[i] -= lr * g[i];
+}
+function stableLR(N){ return 0.45 * (TT / N) / M; }
+function maxDev(y, yt){ let d = 0; for (let i = 0; i < y.length; i++) d = Math.max(d, Math.abs(y[i] - yt[i])); return d; }
+//CORE-END
+
+(function(){
+  if (typeof document === 'undefined') return;
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif';
+  const font = px => px + 'px ' + FONT;
+  function setup(c, ratio, minH){
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 800;
+    const h = Math.max(Math.round(w * ratio), minH);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px';
+    const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+  const sgn = (x, d) => (x < 0 ? '−' : '') + Math.abs(x).toFixed(d);
+
+  /* ---------- (a) shortest path ---------- */
+  const L0 = Math.SQRT2;
+  function updateA(){
+    const e1 = parseFloat($('eA1').value), e2 = parseFloat($('eA2').value);
+    $('eA1v').textContent = sgn(e1, 2); $('eA2v').textContent = sgn(e2, 2);
+    const L = curveLength(e1, e2), h = 1e-3;
+    const first = (curveLength(h * (e1 || 1), h * e2) - curveLength(-h * (e1 || 1), -h * e2)) / (2 * h);
+    $('LA').textContent = L.toFixed(5); $('LA0').textContent = L0.toFixed(5);
+    $('dLA').textContent = '+' + Math.max(0, L - L0).toFixed(5);
+    $('vA').textContent = (Math.abs(first) < 5e-6 ? '≈ 0' : first.toExponential(1)) + '  (직선 기준)';
+    $('verdictA').textContent = (Math.abs(e1) + Math.abs(e2) < 1e-9) ? '✅ 직선이에요. 길이가 가장 짧아요.' :
+      '직선보다 ' + (L - L0).toFixed(4) + ' 만큼 길어졌어요.';
+    const {ctx, w, h: H} = setup($('cA'), 0.55, 280);
+    const pad = 24, side = Math.min((H - 2 * pad) / 2, w - 2 * pad), ox = (w - side) / 2, oy = H - pad - 0.5 * side;
+    const X = x => ox + x * side, Y = y => oy - y * side;
+    ctx.clearRect(0, 0, w, H); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy - side, side, side);
+    ctx.setLineDash([8, 6]); ctx.strokeStyle = css('--true'); ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(1), Y(1)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = css('--user'); ctx.beginPath();
+    for (let i = 0; i <= 200; i++){ const x = i / 200, y = x + e1 * Math.sin(Math.PI * x) + e2 * Math.sin(2 * Math.PI * x);
+      i ? ctx.lineTo(X(x), Y(y)) : ctx.moveTo(X(x), Y(y)); }
+    ctx.stroke();
+    ctx.fillStyle = css('--text'); ctx.font = font(13);
+    [[0, 0, 'A (0,0)', 'left'], [1, 1, 'B (1,1)', 'right']].forEach(a => { ctx.beginPath(); ctx.arc(X(a[0]), Y(a[1]), 5.5, 0, 7); ctx.fill();
+      ctx.textAlign = a[3]; ctx.textBaseline = 'bottom'; ctx.fillText(a[2], X(a[0]) + (a[3] === 'left' ? 10 : -10), Y(a[1]) + (a[1] === 0 ? 20 : -8)); });
+  }
+  ['eA1', 'eA2'].forEach(id => $(id).addEventListener('input', updateA));
+
+  /* ---------- (b) brachistochrone ---------- */
+  const cyc = pathCycloid(), lineP = pathPower(1);
+  const tCycN = descentTime(cyc), tLineN = descentTime(lineP);
+  const tabLine = timeTable(lineP), tabCyc = timeTable(cyc);
+  let tabPow = null, curP = null, raceT = 0, racing = false, lastTs = 0;
+  function updateB(){
+    const p = parseFloat($('pB').value);
+    $('pBv').textContent = p.toFixed(2);
+    if (p !== curP){ curP = p; tabPow = timeTable(pathPower(p)); }
+    const tPow = descentTime(pathPower(p));
+    $('tLine').textContent = tLineN.toFixed(4) + ' s'; $('tPow').textContent = tPow.toFixed(4) + ' s'; $('tCyc').textContent = tCycN.toFixed(4) + ' s';
+    $('verdictB').textContent = Math.abs(p - 1) < 0.005 ? '내 곡선이 직선과 같아요(p = 1). 사이클로이드가 ' + ((tLineN - tCycN) * 1000).toFixed(0) + ' ms 더 빨라요.' :
+      '사이클로이드가 내 곡선보다 ' + ((tPow - tCycN) * 1000).toFixed(0) + ' ms, 직선보다 ' + ((tLineN - tCycN) * 1000).toFixed(0) + ' ms 빨라요.';
+    drawB();
+  }
+  function drawB(){
+    const p = curP;
+    const {ctx, w, h} = setup($('cB'), 0.5, 260);
+    const padL = 40, padR = 20, padT = 20, padB = 30;
+    const ymaxPlot = Math.max(1.15, 2 * cyc.r + 0.05);
+    const sc = Math.min((w - padL - padR) / BX, (h - padT - padB) / ymaxPlot);
+    const X = x => padL + x * sc, Y = y => padT + y * sc;
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = css('--line'); ctx.fillStyle = css('--muted'); ctx.font = font(12); ctx.lineWidth = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let x = 0; x <= BX + 1e-9; x += 0.5){ ctx.beginPath(); ctx.moveTo(X(x), Y(0)); ctx.lineTo(X(x), Y(ymaxPlot)); ctx.stroke(); ctx.fillText(x.toFixed(1), X(x), Y(ymaxPlot) + 5); }
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let y = 0; y <= 1.001; y += 0.5){ ctx.beginPath(); ctx.moveTo(X(0), Y(y)); ctx.lineTo(X(BX), Y(y)); ctx.stroke(); ctx.fillText(y.toFixed(1), X(0) - 6, Y(y)); }
+    function strokeCurve(f, color, dash){
+      ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.setLineDash(dash || []); ctx.beginPath();
+      for (let i = 0; i <= 300; i++){ const q = f(i / 300); i ? ctx.lineTo(X(q[0]), Y(q[1])) : ctx.moveTo(X(q[0]), Y(q[1])); }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    strokeCurve(u => [BX * u, BY * u], css('--accent'));
+    strokeCurve(u => [BX * u, BY * Math.pow(u, p)], css('--user'));
+    strokeCurve(u => [cyc.x(u), cyc.y(u)], css('--true'));
+    // balls
+    const balls = [[tabLine, css('--accent')], [tabPow, css('--user')], [tabCyc, css('--true')]];
+    balls.forEach(b => { const q = lookup(b[0], raceT); ctx.fillStyle = b[1]; ctx.strokeStyle = css('--card'); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(X(q[0]), Y(q[1]), 8, 0, 7); ctx.fill(); ctx.stroke(); });
+    ctx.fillStyle = css('--text'); ctx.font = font(13);
+    [[0, 0, 'A', 'left'], [BX, BY, 'B', 'right']].forEach(a => { ctx.beginPath(); ctx.arc(X(a[0]), Y(a[1]), 4, 0, 7); ctx.fill();
+      ctx.textAlign = a[3]; ctx.textBaseline = 'bottom'; ctx.fillText(a[2], X(a[0]) + (a[3] === 'left' ? 8 : -8), Y(a[1]) - 6); });
+    $('clockB').textContent = raceT.toFixed(3) + ' s';
+  }
+  function frame(ts){
+    if (!racing) return;
+    const dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    raceT += dt * 0.5;
+    const tEnd = Math.max(tabLine.t[tabLine.t.length - 1], tabCyc.t[tabCyc.t.length - 1], tabPow.t[tabPow.t.length - 1]) + 0.05;
+    if (raceT >= tEnd){ raceT = tEnd; racing = false; $('raceBtn').textContent = '▶ 다시 굴려 보기'; }
+    drawB();
+    if (racing) requestAnimationFrame(frame);
+  }
+  $('raceBtn').addEventListener('click', () => {
+    if (racing) return; if (raceT > 0) raceT = 0;
+    racing = true; lastTs = performance.now(); $('raceBtn').textContent = '굴러가는 중…'; requestAnimationFrame(frame);
+  });
+  $('raceReset').addEventListener('click', () => { racing = false; raceT = 0; $('raceBtn').textContent = '▶ 공 굴려 보기 (0.5배속)'; drawB(); });
+  $('pB').addEventListener('input', () => { updateB(); });
+
+  /* ---------- gradient descent demo ---------- */
+  let gy = [], gyt = [], gN = 24, gIt = 0, running = false, gS0 = 0, converged = false;
+  function randomInit(N){
+    const y = new Array(N + 1).fill(0);
+    const r = [0, 1, 2, 3].map(() => (Math.random() * 2 - 1));
+    for (let i = 1; i < N; i++){
+      const t = TT * i / N; let v = 0;
+      for (let n = 1; n <= 4; n++) v += r[n - 1] * 2.2 / n * Math.sin(n * Math.PI * t / TT);
+      y[i] = 0.5 * G * t * (TT - t) * 0.3 + v + (Math.random() * 2 - 1) * 0.5;
+    }
+    return y;
+  }
+  function resetG(){
+    gN = parseInt($('nG').value, 10); $('nGv').textContent = gN;
+    gy = randomInit(gN); gyt = parabolaNodes(gN); gIt = 0; running = false; converged = false;
+    gS0 = discAction(gyt); $('gStart').textContent = '▶ 시작'; updateG();
+  }
+  function updateG(){
+    const S = discAction(gy), dev = maxDev(gy, gyt);
+    $('gIt').textContent = gIt.toLocaleString('ko-KR'); $('gS').textContent = sgn(S, 3); $('gS0').textContent = sgn(gS0, 3);
+    $('gDev').textContent = dev < 1e-3 ? dev.toExponential(1) + ' m' : dev.toFixed(3) + ' m';
+    $('verdictG').textContent = converged ? '✅ 수렴했어요! 점들이 포물선 위에 놓였어요(작용이 최솟값에 도달).' :
+      (running ? '내려가는 중… S가 계속 줄어들고 있어요.' : (gIt === 0 ? '무작위로 구불구불한 경로에서 출발해요. “시작”을 눌러 보세요.' : '일시정지됨.'));
+    drawG();
+  }
+  function drawG(){
+    const {ctx, w, h} = setup($('cG'), 0.48, 260);
+    const L = 46, R = 14, Tp = 14, B = 34, ymin = -5, ymax = 10;
+    const X = t => L + t / TT * (w - L - R), Y = y => Tp + (ymax - y) / (ymax - ymin) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let y = -4; y <= 10; y += 2){ ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(w - R, Y(y)); ctx.stroke(); ctx.fillText(String(y), L - 6, Y(y)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let t = 0; t <= 2.001; t += 0.5){ ctx.beginPath(); ctx.moveTo(X(t), Tp); ctx.lineTo(X(t), h - B); ctx.stroke(); ctx.fillText(t.toFixed(1), X(t), h - B + 6); }
+    ctx.setLineDash([8, 6]); ctx.strokeStyle = css('--true'); ctx.lineWidth = 3; ctx.beginPath();
+    for (let i = 0; i <= 100; i++){ const t = TT * i / 100, y = 0.5 * G * t * (TT - t); i ? ctx.lineTo(X(t), Y(y)) : ctx.moveTo(X(t), Y(y)); }
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = css('--user'); ctx.lineWidth = 2.5; ctx.beginPath();
+    gy.forEach((y, i) => { const t = TT * i / gN; i ? ctx.lineTo(X(t), Y(y)) : ctx.moveTo(X(t), Y(y)); }); ctx.stroke();
+    ctx.fillStyle = css('--user');
+    gy.forEach((y, i) => { const t = TT * i / gN; ctx.beginPath(); ctx.arc(X(t), Y(y), gN > 60 ? 2 : 3.5, 0, 7); ctx.fill(); });
+    ctx.fillStyle = css('--muted'); ctx.textBaseline = 'bottom'; ctx.fillText('시간 t (초)', (L + w - R) / 2, h - 2);
+  }
+  function loop(){
+    if (!running) return;
+    const sp = parseInt($('spG').value, 10), steps = Math.max(1, Math.round(sp * gN * gN / 120)), lr = stableLR(gN);
+    for (let k = 0; k < steps; k++){ gradStep(gy, lr); gIt++; }
+    if (maxDev(gy, gyt) < 1e-4){ running = false; converged = true; $('gStart').textContent = '▶ 시작'; }
+    updateG();
+    if (running) requestAnimationFrame(loop);
+  }
+  $('gStart').addEventListener('click', () => { if (converged) resetG(); if (running) return; running = true; $('gStart').textContent = '진행 중…'; requestAnimationFrame(loop); });
+  $('gPause').addEventListener('click', () => { running = false; $('gStart').textContent = '▶ 계속'; updateG(); });
+  $('gReset').addEventListener('click', resetG);
+  $('nG').addEventListener('input', resetG);
+  $('spG').addEventListener('input', () => { $('spGv').textContent = $('spG').value; });
+
+  function all(){ updateA(); updateB(); drawG(); }
+  window.addEventListener('resize', all);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', all);
+  updateA(); updateB(); resetG();
+  window.__vc = { gradStep: gradStep, resetG: resetG, getY: () => gy };
+})();
+
+</script>
+</body>
+</html>

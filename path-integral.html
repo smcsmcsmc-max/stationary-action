@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경로적분 쉽게 이해하기</title>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
+  --accent:#2563eb; --true:#16a34a; --user:#e11d48; --warn:#b45309; --soft:#eef3ff; --code:#eef1f7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10141c; --card:#182030; --text:#e8ecf5; --muted:#a3adc2; --line:#2b3550;
+    --accent:#7aa2ff; --true:#4ade80; --user:#fb7185; --warn:#fbbf24; --soft:#1b2845; --code:#222c42;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR","Noto Sans CJK KR","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.8;font-size:17px}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.9rem;line-height:1.35;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:0 0 .6em;line-height:1.4}
+h2 .num{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;font-size:.85em;margin-right:.45em}
+@media (prefers-color-scheme: dark){h2 .num{color:#10141c}}
+p{margin:.6em 0}
+.sub{color:var(--muted);margin:0 0 1em}
+section,.summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+.summary{background:var(--soft);border-color:var(--accent)}
+.summary h2{margin-bottom:.3em}
+.summary ol{margin:.3em 0 0;padding-left:1.4em}
+.summary li{margin:.25em 0}
+.eq{background:var(--code);border-radius:10px;padding:12px 16px;margin:.8em 0;font-size:1.15rem;text-align:center;
+  font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;overflow-x:auto;white-space:nowrap}
+.eq small{display:block;font-family:inherit;font-size:.82rem;color:var(--muted);white-space:normal;margin-top:2px}
+.note{border-left:4px solid var(--warn);background:var(--code);padding:8px 14px;border-radius:0 8px 8px 0;margin:.9em 0;font-size:.95rem}
+.term{font-weight:700;color:var(--accent)}
+i.v{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.viz{display:grid;grid-template-columns:1fr;gap:14px}
+canvas{width:100%;display:block;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);margin:6px 2px}
+.legend b{display:inline-block;width:26px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;flex-wrap:wrap}
+.sl label span.val{font-variant-numeric:tabular-nums;font-weight:700}
+input[type=range]{width:100%;height:32px;accent-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+button{font:inherit;font-size:.95rem;padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer;font-weight:600}
+button:hover{background:var(--soft)}
+button.primary{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){button.primary{color:#10141c}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--code);border-radius:10px;padding:8px 12px}
+.readout .lab{font-size:.78rem;color:var(--muted);line-height:1.4}
+.readout .num{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:16px;background:var(--code);border-radius:8px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;width:0;background:var(--user);transition:width .08s}
+.verdict{font-weight:700;margin:6px 0;min-height:1.8em}
+.plotctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.92rem;margin:4px 0}
+select{font:inherit;font-size:.92rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+ul{padding-left:1.3em}
+li{margin:.3em 0}
+dl{margin:0}
+dt{font-weight:700;margin-top:.8em}
+dd{margin:0 0 0 .2em;color:var(--text)}
+
+nav.nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0}
+nav.nav a{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:.92rem;font-weight:600}
+nav.nav a:hover{background:var(--soft);border-color:var(--accent)}
+nav.nav a[aria-current=page]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (prefers-color-scheme: dark){nav.nav a[aria-current=page]{color:#10141c}}
+nav.nav a:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.eqs{margin:.5em 0}
+.step{border-left:4px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.step h3{margin:0 0 .2em;font-size:1.02rem}
+a.link{color:var(--accent);font-weight:700}
+.linkcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:.8em}
+.linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
+.linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
+.linkcards a:hover{background:var(--code)}
+footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="학습 시리즈">
+  <a href="index.html">① 정상 작용 원리</a>
+  <a href="variational-calculus.html">② 변분법</a>
+  <a href="path-integral.html" aria-current="page">③ 경로적분</a>
+</nav>
+<header>
+  <h1>🌊 경로적분: 가능한 모든 경로를 한꺼번에 더하기</h1>
+  <p class="sub">파인만의 아이디어로 보면 “정상 작용 원리”는 양자 세계의 합 속에서 저절로 나타나요.</p>
+</header>
+
+<div class="summary" id="summary">
+  <h2>3줄 요약</h2>
+  <ol>
+    <li>양자역학에서 입자는 A에서 B까지 <b>가능한 모든 경로</b>를 “동시에” 지나고, 경로마다 <b>위상 e<sup>iS/ħ</sup></b>(길이 1짜리 회전하는 화살표)를 가져요.</li>
+    <li>모든 화살표를 더한 합의 크기를 제곱한 것이 확률이에요. 고전 경로에서 먼 경로들은 화살표가 빙빙 돌며 <b>서로 상쇄</b>되고, 작용이 정상인 고전 경로 근처만 방향이 맞아 <b>살아남아요</b>.</li>
+    <li>ħ가 작을수록(우리 일상 세계) 살아남는 영역이 좁아져 고전 경로 하나만 남고, 이중 슬릿에서는 두 경로의 화살표 합이 <b>간섭무늬</b>를 만들어요.</li>
+  </ol>
+</div>
+
+<section id="intuition">
+  <h2><span class="num">1</span>이중 슬릿의 수수께끼</h2>
+  <p>벽에 틈(<b>슬릿</b>) 두 개를 뚫고 전자를 한 알씩 쏴 봐요. 전자는 스크린에 점 하나로 도착해요. 그런데 수많은 전자가 쌓이면 밝고 어두운 <b>줄무늬(간섭무늬)</b>가 나타나요. 전자 한 알이 두 틈을 “모두” 지난 것처럼 행동하는 거예요.</p>
+  <p>파인만은 여기서 한 걸음 더 나갔어요. 틈이 두 개라면 경로가 두 가지, 틈이 천 개라면 천 가지, 아예 벽이 없다면 <b>A에서 B로 가는 모든 경로</b>가 기여한다고요. 이게 <span class="term">경로적분(path integral)</span>이에요.</p>
+</section>
+
+<section id="rule">
+  <h2><span class="num">2</span>경로적분의 규칙</h2>
+  <ul>
+    <li>경로 하나마다 <span class="term">작용 S</span>를 계산해요(앞 페이지에서 배운 S = ∫(T − V)dt).</li>
+    <li>그 경로의 <span class="term">진폭</span>(확률의 재료가 되는 복소수)은 <i class="v">e<sup>iS/ħ</sup></i>이에요. 크기는 항상 1이고, <span class="term">위상</span> S/ħ만큼 회전한 <b>화살표(phasor)</b>라고 생각하면 돼요.</li>
+    <li><span class="term">ħ</span>(에이치바)는 환산 플랑크 상수로 약 1.05 × 10⁻³⁴ J·s예요. 우리 일상의 작용(J·s 단위로 1 안팎)에 비하면 엄청나게 작은 수예요.</li>
+    <li>모든 경로의 화살표를 <b>벡터로 더해서</b> 합을 구하고, <b>그 길이의 제곱</b>이 도착 확률에 비례해요.</li>
+  </ul>
+  <div class="eq">진폭 합 = Σ<sub>모든 경로</sub> e<sup>iS[경로]/ħ</sup> , &nbsp; 확률 ∝ |진폭 합|²</div>
+  <p>왜 고전 경로만 보일까요? 고전 경로 근처에서는 경로를 조금 바꿔도 S가 거의 안 변해서(<b>정상!</b>) 화살표들이 같은 방향을 가리켜요. 그 외 경로에서는 S가 빠르게 변해 화살표가 휙휙 돌고, 더하면 서로 지워져요. 이걸 <span class="term">정상 위상 근사</span>라고 불러요.</p>
+</section>
+
+<section id="demo1">
+  <h2><span class="num">3</span>직접 해 보기 ①: 화살표를 더하면 고전 경로만 남는다</h2>
+  <p>앞 페이지의 공을 다시 써요(A, B는 높이 0, 걸리는 시간 2초, g = 9.8, m = 1). 진짜 경로(포물선)에 사인 물결 하나를 크기 <b>a</b>만큼 더한 경로들을 모아 볼게요. 이 경우 작용은 정확히</p>
+  <div class="eq">S(a) = S₀ + c·a² , &nbsp; c = n²π²m/(4T)<small>n은 물결 번호, T = 2초. 위상은 진짜 경로를 기준(0)으로 삼아 (S − S₀)/ħ = c·a²/ħ 로 그려요(전체에 곱해지는 공통 회전은 확률에 영향이 없어요).</small></div>
+  <p>a를 −범위~+범위에서 여러 개 뽑고, 작은 a부터 순서대로 화살표를 <b>꼬리에 머리를 이어</b> 붙여요. 맨 처음 점에서 마지막 점까지 이은 굵은 화살표가 <b>합</b>이에요. 화살표 하나의 길이는 경로 간격(2·범위/N)이라, 합은 적분값에 가까워져요.</p>
+
+  <div class="viz">
+    <div>
+      <canvas id="cP" width="800" height="340" role="img" aria-label="진짜 경로와 위상으로 색칠한 여러 경로"></canvas>
+      <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로</span><span>색깔 = 각 경로의 위상(같은 색이면 화살표 방향이 같아요)</span></div>
+    </div>
+    <div class="cols">
+      <div>
+        <canvas id="cS" width="500" height="460" role="img" aria-label="화살표를 이어 붙인 나선"></canvas>
+        <div class="legend"><span><b style="border-color:var(--true)"></b>고전 경로 근처 (|a| ≤ a*)</span><span><b style="border-color:var(--muted)"></b>먼 경로</span><span><b style="border-color:var(--user)"></b>합</span></div>
+      </div>
+      <div>
+        <canvas id="cF" width="500" height="460" role="img" aria-label="경로 흔들림 크기에 따른 위상"></canvas>
+        <div class="legend"><span>가로: 흔들림 a (m), 세로: 위상(바퀴 수)</span><span>초록 띠: |a| ≤ a*</span></div>
+      </div>
+    </div>
+
+    <div class="sl"><label for="hb">ħ (여기서는 “효과적인” 값) <span class="val" id="hbv">1.00</span></label><input type="range" id="hb" min="0" max="1000" step="1" value="338"></div>
+    <div class="sl"><label for="rg">포함할 경로의 범위 |a| ≤ <span class="val" id="rgv">2.00 m</span></label><input type="range" id="rg" min="0.1" max="2.5" step="0.05" value="2"></div>
+    <div class="sl"><label for="np">경로 개수 N <span class="val" id="npv">1000</span></label><input type="range" id="np" min="50" max="4000" step="50" value="1000"></div>
+    <div class="plotctl">
+      <label for="md">물결 번호 n:</label>
+      <select id="md"><option value="1">1 (한 번 볼록)</option><option value="2">2 (S자)</option><option value="3">3 (잔물결)</option></select>
+      <label for="smp">뽑는 방법:</label>
+      <select id="smp"><option value="u">일정한 간격</option><option value="r">무작위</option></select>
+      <button id="rs" type="button">다시 뽑기</button>
+      <button class="primary" id="hbSmall" type="button">ħ를 작게 (→ 고전 극한)</button>
+    </div>
+    <div class="readout" aria-live="polite">
+      <div><div class="lab">경로 하나의 폭 a* = √(πħ/c)<br>(위상이 π 변하는 거리)</div><div class="num" id="rAs">—</div></div>
+      <div><div class="lab">전체 합의 크기 |Σ|</div><div class="num" id="rSum">—</div></div>
+      <div><div class="lab">이론값 √(πħ/c)<br>(범위가 충분히 넓을 때)</div><div class="num" id="rTh">—</div></div>
+      <div><div class="lab">가까운 경로(|a| ≤ a*)만의 합</div><div class="num" id="rNear">—</div></div>
+      <div><div class="lab">먼 경로(|a| &gt; a*): 화살표 총길이 → 합</div><div class="num" id="rNF" style="font-size:1rem">—</div></div>
+    </div>
+    <p class="verdict" id="verdictP"></p>
+  </div>
+
+  <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
+  <ul>
+    <li>나선은 가운데(고전 경로)에서는 느리게 돌고, 바깥으로 갈수록 점점 빠르게 돌며 작은 원을 그려요(<b>코르뉘 나선</b>). 먼 경로가 더해 주는 건 작은 원들뿐이라 합이 거의 늘지 않아요.</li>
+    <li>범위 슬라이더를 키워도 합의 크기는 이론값 근처에서 출렁일 뿐 커지지 않아요. 결국 <b>a* 정도의 좁은 띠</b>가 합을 정해요.</li>
+    <li>ħ를 줄이면 a*가 √ħ에 비례해 줄어들어요. 즉 <b>고전 극한(ħ → 0)</b>에서는 진짜 경로의 아주 가까운 이웃만 남아요. 그래서 큰 물체는 고전 경로로만 움직이는 것처럼 보여요.</li>
+  </ul>
+  <div class="note"><b>솔직한 한계:</b> 실제 경로적분은 경로의 모든 모양(무한 개의 물결)을 한꺼번에 더해요. 여기서는 물결 <b>하나</b>의 크기만 바꾼 한 줄짜리 경로 모음을 시각화한 단순화 예시예요. 또 N개 경로를 일정 간격으로 더한 이산 근사이고, 공통 규격화 상수는 생략했어요. 이 계는 S가 a의 정확한 이차식이라 정상 위상 근사가 잘 맞는 편이에요.</div>
+</section>
+
+<section id="demo2">
+  <h2><span class="num">4</span>직접 해 보기 ②: 이중 슬릿, 두 경로의 합</h2>
+  <p>왼쪽의 광원(또는 전자총)에서 나온 입자가 슬릿 두 개 중 하나를 지나 오른쪽 스크린의 한 점에 도착해요. 광원에서 슬릿까지 500 mm, 슬릿에서 스크린까지 1000 mm예요. 정해진 파장 λ인 입자는 경로 길이 ℓ를 따라 위상이 <b>2πℓ/λ</b>만큼 쌓여요(자유입자의 작용에서 나오는 결과를 단순화한 것). 스크린의 점 x에 도착하는 두 경로의 화살표를 더하면 그 점의 밝기가 나와요.</p>
+  <ul>
+    <li>두 경로 길이 차이가 파장의 <b>정수배</b> → 화살표가 같은 방향 → 합이 2배 → 확률 4배(밝음, 보강간섭)</li>
+    <li>길이 차이가 파장의 <b>반(半)정수배</b> → 화살표가 반대 방향 → 합이 0(어둠, 상쇄간섭)</li>
+  </ul>
+  <div class="viz">
+    <div><canvas id="cG2" width="800" height="230" role="img" aria-label="이중 슬릿 배치도"></canvas>
+      <div class="legend"><span>※ 세로 방향을 크게 늘린 그림이라 비례가 맞지 않아요</span><span><b style="border-color:var(--accent)"></b>슬릿 1을 지나는 경로</span><span><b style="border-color:var(--warn)"></b>슬릿 2를 지나는 경로</span></div></div>
+    <div class="cols">
+      <div><canvas id="cI" width="560" height="360" role="img" aria-label="스크린 위치에 따른 밝기"></canvas>
+        <div class="legend"><span>가로: 스크린 위치 x (mm), 세로: 상대 밝기</span></div></div>
+      <div><canvas id="cPh" width="500" height="360" role="img" aria-label="선택한 위치의 화살표 합"></canvas>
+        <div class="legend"><span><b style="border-color:var(--accent)"></b>슬릿 1</span><span><b style="border-color:var(--warn)"></b>슬릿 2</span><span><b style="border-color:var(--user)"></b>합</span></div></div>
+    </div>
+    <div class="sl"><label for="xs">스크린 위치 x <span class="val" id="xsv">0.00 mm</span></label><input type="range" id="xs" min="-10" max="10" step="0.05" value="1.2"></div>
+    <div class="sl"><label for="ds">슬릿 간격 d <span class="val" id="dsv">0.30 mm</span></label><input type="range" id="ds" min="0.12" max="0.6" step="0.01" value="0.3"></div>
+    <div class="sl"><label for="ls">파장 λ <span class="val" id="lsv">500 nm</span></label><input type="range" id="ls" min="300" max="800" step="10" value="500"></div>
+    <div class="sl"><label for="ms">슬릿 하나당 경로 수 <span class="val" id="msv">1</span></label><input type="range" id="ms" min="1" max="7" step="1" value="1"></div>
+    <div class="readout" aria-live="polite">
+      <div><div class="lab">경로 길이 차이 ÷ 파장</div><div class="num" id="dL">—</div></div>
+      <div><div class="lab">화살표 합의 크기 / 최대</div><div class="num" id="sA">—</div></div>
+      <div><div class="lab">상대 밝기 (확률 ∝ |합|²)</div><div class="num" id="sI">—</div></div>
+      <div><div class="lab">무늬 간격 ≈ λ·L₂/d</div><div class="num" id="sF">—</div></div>
+    </div>
+    <p class="verdict" id="verdictD"></p>
+  </div>
+  <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
+  <ul>
+    <li>간격 d를 키우면 줄무늬가 촘촘해지고, 파장 λ를 키우면 넓어져요(무늬 간격 ≈ λ·L₂/d).</li>
+    <li>슬릿 하나당 경로 수를 늘리면(슬릿 폭 0.06 mm 안에 경로를 여러 개 놓는 것) 가장자리에서 밝기가 서서히 줄어드는 <b>큰 포락선</b>이 생겨요. 경로가 많아질수록 현실의 “폭이 있는 슬릿”에 가까워져요.</li>
+  </ul>
+  <div class="note"><b>단순화:</b> 슬릿 안의 경로를 몇 개만 골랐고, 슬릿을 지나는 곧은 경로만 더했어요(곡선·꺾인 경로, 진폭 감소 인자는 생략). 그래도 “화살표 합 → 밝기”라는 핵심은 실제 계산과 같아요.</div>
+</section>
+
+<section id="further">
+  <h2><span class="num">5</span>더 읽어 볼 거리</h2>
+  <ul>
+    <li><b>전파자(propagator)</b>: A에서 B로 갈 진폭 <i class="v">K(B, A)</i>를 모든 경로의 합으로 쓴 것이 정식 경로적분이에요. 이 K를 알면 파동함수가 시간에 따라 어떻게 변하는지 알 수 있어요.</li>
+    <li><b>윅 회전</b>: 시간을 허수로 바꾸는 수학적 기법이에요(t → −iτ). 그러면 e<sup>iS/ħ</sup>의 회전하는 화살표가 e<sup>−S/ħ</sup> 꼴의 <b>줄어드는 가중치</b>로 바뀌어 계산이 쉬워지고, 통계역학과 이어져요.</li>
+    <li>이 페이지의 합은 눈으로 보기 위한 <b>이산 시각화</b>예요. 엄밀한 정의(측도, 규격화)는 대학원 수준의 양자역학·장이론 교재에서 다뤄요. 파인만의 <i>QED</i>(일반인용)나 Feynman &amp; Hibbs의 <i>Quantum Mechanics and Path Integrals</i>를 추천해요.</li>
+    <li>수학이 궁금하면 <a class="link" href="variational-calculus.html">② 변분법</a>, 원리의 큰 그림은 <a class="link" href="index.html">① 정상 작용 원리</a>로 돌아가 보세요.</li>
+  </ul>
+</section>
+
+<section id="glossary">
+  <h2><span class="num">6</span>용어 정리</h2>
+  <dl>
+    <dt>경로적분</dt><dd>가능한 모든 경로의 기여를 더해 양자 진폭을 구하는 방법(파인만).</dd>
+    <dt>진폭</dt><dd>확률의 재료가 되는 복소수. 확률은 진폭 크기의 제곱.</dd>
+    <dt>위상</dt><dd>복소수 화살표가 가리키는 각도. 여기서는 S/ħ.</dd>
+    <dt>화살표(phasor)</dt><dd>크기 1, 방향이 위상인 화살표. 더할 땐 벡터처럼 이어 붙여요.</dd>
+    <dt>ħ (환산 플랑크 상수)</dt><dd>약 1.05×10⁻³⁴ J·s. 양자 효과의 크기를 정하는 상수.</dd>
+    <dt>정상 위상 근사</dt><dd>작용이 정상인 경로 근처의 기여만 살아남고 나머지는 상쇄된다는 근사.</dd>
+    <dt>간섭 (보강/상쇄)</dt><dd>화살표가 같은 방향이면 커지고(보강), 반대 방향이면 지워지는(상쇄) 현상.</dd>
+    <dt>고전 극한</dt><dd>ħ가 작아 양자 효과가 안 보이고 고전 경로만 남는 상황.</dd>
+    <dt>파장 λ</dt><dd>파동의 한 주기 길이. 입자의 운동량 p와 λ = h/p (h = 2πħ)로 연결돼요.</dd>
+    <dt>전파자 / 윅 회전</dt><dd>A→B 진폭을 주는 함수 / 시간을 허수로 바꿔 계산을 쉽게 하는 기법.</dd>
+  </dl>
+</section>
+
+<footer>이 페이지는 인터넷 연결 없이 이 파일 하나로 동작해요. · 데모 ①: g = 9.8, m = 1, T = 2초</footer>
+
+</main>
+<script>
+//CORE-START
+const G = 9.8, M = 1, TT = 2;
+const HB_MIN = 0.05, HB_MAX = 10;
+function hbarFromSlider(v){ return HB_MIN * Math.pow(HB_MAX / HB_MIN, v / 1000); }
+function cMode(n){ return n * n * Math.PI * Math.PI * M / (4 * TT); }   // S(a) = S0 + c a^2
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function samplePaths(N, A, random, rng){
+  const a = [];
+  if (!random){ for (let i = 0; i < N; i++) a.push(-A + (i + 0.5) * 2 * A / N); }
+  else { for (let i = 0; i < N; i++) a.push((rng() * 2 - 1) * A); a.sort((x, y) => x - y); }
+  return a;
+}
+// head-to-tail sum of arrows e^{i c a^2/hbar}, each of length w = 2A/N
+function phasorSum(as, A, hbar, c){
+  const N = as.length, w = 2 * A / N, astar = Math.sqrt(Math.PI * hbar / c);
+  const px = [0], py = [0]; let re = 0, im = 0, nr = 0, ni = 0, fr = 0, fi = 0, nNear = 0;
+  for (let i = 0; i < N; i++){
+    const ph = c * as[i] * as[i] / hbar, cx = w * Math.cos(ph), sy = w * Math.sin(ph);
+    re += cx; im += sy; px.push(re); py.push(im);
+    if (Math.abs(as[i]) <= astar){ nr += cx; ni += sy; nNear++; } else { fr += cx; fi += sy; }
+  }
+  return { px: px, py: py, re: re, im: im, mag: Math.hypot(re, im), near: Math.hypot(nr, ni), far: Math.hypot(fr, fi), farLen: (N - nNear) * w, astar: astar, nNear: nNear, theory: Math.sqrt(Math.PI * hbar / c) };
+}
+// ---- double slit (lengths in mm) ----
+const L1 = 500, L2 = 1000, SLITW = 0.06;
+function slitOffsets(d, m){
+  const out = [];
+  [-1, 1].forEach(sg => { for (let j = 0; j < m; j++){ const off = m === 1 ? 0 : (j / (m - 1) - 0.5) * SLITW; out.push({ s: sg * d / 2 + off, slit: sg < 0 ? 0 : 1 }); } });
+  return out;
+}
+function extraLen(s, x){   // total path length minus (L1+L2), computed without cancellation
+  const dx = x - s;
+  return s * s / (Math.sqrt(L1 * L1 + s * s) + L1) + dx * dx / (Math.sqrt(L2 * L2 + dx * dx) + L2);
+}
+function slitAmplitude(x, lamNm, d, m){
+  const k = 2 * Math.PI / (lamNm * 1e-6), offs = slitOffsets(d, m);
+  let re = 0, im = 0; const arr = [];
+  offs.forEach(o => { const ph = k * extraLen(o.s, x); re += Math.cos(ph); im += Math.sin(ph); arr.push({ ph: ph, slit: o.slit }); });
+  return { re: re, im: im, mag: Math.hypot(re, im), n: offs.length, arrows: arr, I: (re * re + im * im) / (offs.length * offs.length) };
+}
+//CORE-END
+
+(function(){
+  if (typeof document === 'undefined') return;
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif';
+  const font = px => px + 'px ' + FONT;
+  function setup(c, ratio, minH){
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 800;
+    const h = Math.max(Math.round(w * ratio), minH);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px';
+    const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function arrow(ctx, x0, y0, x1, y1, color, lw, head){
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const ang = Math.atan2(y1 - y0, x1 - x0), L = Math.hypot(x1 - x0, y1 - y0), hl = Math.min(head || 10, L * 0.6);
+    if (L < 1.5) return;
+    ctx.beginPath(); ctx.moveTo(x1, y1);
+    ctx.lineTo(x1 - hl * Math.cos(ang - 0.4), y1 - hl * Math.sin(ang - 0.4));
+    ctx.lineTo(x1 - hl * Math.cos(ang + 0.4), y1 - hl * Math.sin(ang + 0.4)); ctx.closePath(); ctx.fill();
+  }
+
+  /* ================= demo 1 ================= */
+  let seed = 12345, samples = [], sumInfo = null;
+  const AMAX = 2.5;
+  const yTrue = t => 0.5 * G * t * (TT - t);
+  function params(){
+    const hb = hbarFromSlider(parseFloat($('hb').value)), A = parseFloat($('rg').value), N = parseInt($('np').value, 10),
+      n = parseInt($('md').value, 10), rnd = $('smp').value === 'r';
+    return { hb: hb, A: A, N: N, n: n, rnd: rnd, c: cMode(n) };
+  }
+  function update1(resample){
+    const P = params();
+    $('hbv').textContent = P.hb.toFixed(P.hb < 1 ? 3 : 2); $('rgv').textContent = P.A.toFixed(2) + ' m'; $('npv').textContent = P.N;
+    samples = samplePaths(P.N, P.A, P.rnd, mulberry32(seed));
+    sumInfo = phasorSum(samples, P.A, P.hb, P.c);
+    const s = sumInfo;
+    $('rAs').textContent = '±' + s.astar.toFixed(3) + ' m';
+    $('rSum').textContent = s.mag.toFixed(4);
+    $('rTh').textContent = s.theory.toFixed(4);
+    $('rNear').textContent = s.near.toFixed(3);
+    $('rNF').textContent = s.farLen.toFixed(2) + ' → ' + s.far.toFixed(3);
+    const wide = P.A >= 2 * s.astar;
+    $('verdictP').textContent = s.astar > P.A ? 'ħ가 커서 포함한 경로 전체의 화살표가 거의 같은 방향이에요(양자 효과가 큰 세계: 모든 경로가 비슷하게 기여).' :
+      (wide ? '고전 경로 근처 폭(±' + s.astar.toFixed(2) + ' m)만 방향이 맞고, 바깥 경로 화살표들은 총길이 ' + s.farLen.toFixed(1) + '이지만 서로 지워져 합은 ' + s.far.toFixed(2) + '뿐이에요. 전체 합 ' + s.mag.toFixed(3) + '은 이론값 ' + s.theory.toFixed(3) + ' 근처예요.' :
+              '포함한 범위가 아직 좁아요. 범위를 늘리거나 ħ를 줄이면(a*가 줄어요) 바깥 경로들이 서로 지워지는 모습이 보여요.');
+    drawPaths(P); drawSpiral(P); drawPhase(P);
+  }
+  function drawPaths(P){
+    const {ctx, w, h} = setup($('cP'), 0.42, 220);
+    const L = 46, R = 14, Tp = 12, B = 34, ymin = -3.5, ymax = 8;
+    const X = t => L + t / TT * (w - L - R), Y = y => Tp + (ymax - y) / (ymax - ymin) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let y = -2; y <= 8; y += 2){ ctx.beginPath(); ctx.moveTo(L, Y(y)); ctx.lineTo(w - R, Y(y)); ctx.stroke(); ctx.fillText(String(y), L - 6, Y(y)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let t = 0; t <= 2.001; t += 0.5){ ctx.beginPath(); ctx.moveTo(X(t), Tp); ctx.lineTo(X(t), h - B); ctx.stroke(); ctx.fillText(t.toFixed(1), X(t), h - B + 6); }
+    const K = Math.min(samples.length, 90);
+    for (let j = 0; j < K; j++){
+      const a = samples[Math.min(samples.length - 1, Math.floor((j + 0.5) * samples.length / K))];
+      const ph = P.c * a * a / P.hb, hue = ((ph / (2 * Math.PI)) % 1 + 1) % 1 * 360;
+      ctx.strokeStyle = 'hsla(' + hue.toFixed(0) + ',75%,52%,0.55)'; ctx.lineWidth = 1.6; ctx.beginPath();
+      for (let i = 0; i <= 80; i++){ const t = TT * i / 80, y = yTrue(t) + a * Math.sin(P.n * Math.PI * t / TT); i ? ctx.lineTo(X(t), Y(y)) : ctx.moveTo(X(t), Y(y)); }
+      ctx.stroke();
+    }
+    ctx.setLineDash([8, 6]); ctx.strokeStyle = css('--true'); ctx.lineWidth = 3.5; ctx.beginPath();
+    for (let i = 0; i <= 100; i++){ const t = TT * i / 100; i ? ctx.lineTo(X(t), Y(yTrue(t))) : ctx.moveTo(X(t), Y(yTrue(t))); }
+    ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = css('--muted'); ctx.textBaseline = 'bottom'; ctx.fillText('시간 t (초) — 경로 ' + K + '개만 대표로 그렸어요', (L + w - R) / 2, h - 2);
+  }
+  function drawSpiral(P){
+    const {ctx, w, h} = setup($('cS'), 0.92, 280);
+    const s = sumInfo;
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+    for (let i = 0; i < s.px.length; i++){ x0 = Math.min(x0, s.px[i]); x1 = Math.max(x1, s.px[i]); y0 = Math.min(y0, s.py[i]); y1 = Math.max(y1, s.py[i]); }
+    x0 = Math.min(x0, 0); x1 = Math.max(x1, 0); y0 = Math.min(y0, 0); y1 = Math.max(y1, 0);
+    const pad = 30, span = Math.max(x1 - x0, y1 - y0, 1e-6), sc = (Math.min(w, h) - 2 * pad) / span;
+    const cx = (w - (x1 - x0) * sc) / 2 - x0 * sc, cy = (h + (y1 - y0) * sc) / 2 + y0 * sc;
+    const X = x => cx + x * sc, Y = y => cy - y * sc;
+    ctx.clearRect(0, 0, w, h); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(8, Y(0)); ctx.lineTo(w - 8, Y(0)); ctx.moveTo(X(0), 8); ctx.lineTo(X(0), h - 8); ctx.stroke();
+    // segments: far gray, near green
+    const N = samples.length;
+    for (const near of [false, true]){
+      ctx.strokeStyle = near ? css('--true') : css('--muted'); ctx.lineWidth = near ? 3 : 1.6; ctx.globalAlpha = near ? 1 : 0.8; ctx.beginPath();
+      let pen = false;
+      for (let i = 0; i < N; i++){
+        const isNear = Math.abs(samples[i]) <= s.astar;
+        if (isNear === near){ if (!pen){ ctx.moveTo(X(s.px[i]), Y(s.py[i])); pen = true; } ctx.lineTo(X(s.px[i + 1]), Y(s.py[i + 1])); } else pen = false;
+      }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = css('--text'); ctx.beginPath(); ctx.arc(X(0), Y(0), 4.5, 0, 7); ctx.fill();
+    arrow(ctx, X(0), Y(0), X(s.re), Y(s.im), css('--user'), 3.5, 12);
+    ctx.font = font(12); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillStyle = css('--muted'); ctx.fillText('검은 점 = 시작(a = −범위)', 10, 8);
+    ctx.fillStyle = css('--user'); ctx.fillText('합 |Σ| = ' + s.mag.toFixed(3), 10, 26);
+  }
+  function drawPhase(P){
+    const {ctx, w, h} = setup($('cF'), 0.92, 280);
+    const L = 54, R = 12, Tp = 14, B = 40, s = sumInfo;
+    const phMax = P.c * AMAX * AMAX / P.hb / (2 * Math.PI), yTop = Math.max(1, phMax * 1.05);
+    const X = a => L + (a + AMAX) / (2 * AMAX) * (w - L - R), Y = v => Tp + (yTop - v) / yTop * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(22,163,74,0.18)'; ctx.fillRect(X(-s.astar), Tp, X(s.astar) - X(-s.astar), h - Tp - B);
+    ctx.fillStyle = 'rgba(128,128,128,0.15)';
+    ctx.fillRect(L, Tp, X(-P.A) - L, h - Tp - B); ctx.fillRect(X(P.A), Tp, w - R - X(P.A), h - Tp - B);
+    ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    const stepV = yTop > 20 ? 10 : yTop > 8 ? 5 : yTop > 3 ? 1 : 0.5;
+    for (let v = 0; v <= yTop; v += stepV){ ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v % 1 ? v.toFixed(1) : String(v), L - 6, Y(v)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let a = -2; a <= 2.001; a += 1){ ctx.beginPath(); ctx.moveTo(X(a), Tp); ctx.lineTo(X(a), h - B); ctx.stroke(); ctx.fillText(a.toFixed(0), X(a), h - B + 6); }
+    ctx.strokeStyle = css('--accent'); ctx.lineWidth = 3; ctx.beginPath();
+    for (let i = 0; i <= 200; i++){ const a = -AMAX + 2 * AMAX * i / 200, v = P.c * a * a / P.hb / (2 * Math.PI); i ? ctx.lineTo(X(a), Y(v)) : ctx.moveTo(X(a), Y(v)); }
+    ctx.stroke();
+    ctx.fillStyle = css('--muted'); ctx.textBaseline = 'bottom'; ctx.fillText('흔들림 a (m)  ·  초록=고전 근처, 회색=포함 안 한 범위', (L + w - R) / 2, h - 2);
+    ctx.save(); ctx.translate(12, (Tp + h - B) / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = 'top'; ctx.fillText('위상 (바퀴 수)', 0, -2); ctx.restore();
+  }
+  ['hb', 'rg', 'np', 'md', 'smp'].forEach(id => $(id).addEventListener('input', () => update1()));
+  $('md').addEventListener('change', () => update1()); $('smp').addEventListener('change', () => update1());
+  $('rs').addEventListener('click', () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; update1(); });
+  $('hbSmall').addEventListener('click', () => { $('hb').value = 0; update1(); });
+
+  /* ================= demo 2 ================= */
+  const XR = 10;
+  function p2(){ return { x: parseFloat($('xs').value), d: parseFloat($('ds').value), lam: parseFloat($('ls').value), m: parseInt($('ms').value, 10) }; }
+  function update2(){
+    const P = p2();
+    $('xsv').textContent = (P.x < 0 ? '−' : '') + Math.abs(P.x).toFixed(2) + ' mm'; $('dsv').textContent = P.d.toFixed(2) + ' mm';
+    $('lsv').textContent = P.lam + ' nm'; $('msv').textContent = P.m;
+    const am = slitAmplitude(P.x, P.lam, P.d, P.m);
+    const dl = (extraLen(P.d / 2, P.x) - extraLen(-P.d / 2, P.x)) / (P.lam * 1e-6);
+    $('dL').textContent = (dl < 0 ? '−' : '') + Math.abs(dl).toFixed(2);
+    $('sA').textContent = (am.mag / am.n).toFixed(2); $('sI').textContent = am.I.toFixed(3);
+    const fr = P.lam * 1e-6 * L2 / P.d; $('sF').textContent = fr.toFixed(2) + ' mm';
+    const fracPart = Math.abs(dl) - Math.floor(Math.abs(dl)), fd = Math.min(fracPart, 1 - fracPart);
+    $('verdictD').textContent = am.I > 0.9 ? '밝은 줄무늬: 두 경로의 화살표가 같은 방향이라 합이 커져요.' :
+      (am.I < 0.1 ? '어두운 줄무늬: 두 화살표가 거의 반대 방향이라 서로 지워져요.' : '중간 밝기: 두 화살표 사이의 각도가 어중간해요(길이 차이 ÷ 파장 = ' + Math.abs(dl).toFixed(2) + ').');
+    drawGeom(P); drawIntensity(P, am); drawPhasorD(P, am);
+  }
+  function drawGeom(P){
+    const {ctx, w, h} = setup($('cG2'), 0.28, 170);
+    const xs = 30, xw = w * 0.36, xsc = w - 50, ymid = h / 2, vs = (h / 2 - 18) / XR, ds = Math.min(h * 0.28, 8 + (P.d / 0.6) * (h * 0.22));
+    ctx.clearRect(0, 0, w, h); ctx.lineWidth = 1; ctx.strokeStyle = css('--muted'); ctx.fillStyle = css('--muted'); ctx.font = font(12);
+    // wall with slits
+    ctx.strokeStyle = css('--text'); ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(xw, 8); ctx.lineTo(xw, ymid - ds / 2 - 4); ctx.moveTo(xw, ymid - ds / 2 + 4); ctx.lineTo(xw, ymid + ds / 2 - 4); ctx.moveTo(xw, ymid + ds / 2 + 4); ctx.lineTo(xw, h - 8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(xsc, 8); ctx.lineTo(xsc, h - 8); ctx.stroke();
+    const sy = ymid - P.x * vs;
+    const slit1 = ymid + ds / 2, slit2 = ymid - ds / 2;  // slit 0 (s<0) drawn lower, slit 1 above, matches x sign
+    ctx.lineWidth = 2.5; ctx.strokeStyle = css('--accent'); ctx.beginPath(); ctx.moveTo(xs, ymid); ctx.lineTo(xw, slit1); ctx.lineTo(xsc, sy); ctx.stroke();
+    ctx.strokeStyle = css('--warn'); ctx.beginPath(); ctx.moveTo(xs, ymid); ctx.lineTo(xw, slit2); ctx.lineTo(xsc, sy); ctx.stroke();
+    ctx.fillStyle = css('--text'); ctx.beginPath(); ctx.arc(xs, ymid, 6, 0, 7); ctx.fill();
+    ctx.fillStyle = css('--user'); ctx.beginPath(); ctx.arc(xsc, sy, 6, 0, 7); ctx.fill();
+    ctx.fillStyle = css('--muted'); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('광원', xs + 8, h - 4); ctx.fillText('슬릿', xw, h - 4); ctx.fillText('스크린', xsc - 4, h - 4);
+  }
+  function drawIntensity(P, am){
+    const {ctx, w, h} = setup($('cI'), 0.64, 240);
+    const L = 40, R = 12, Tp = 12, B = 94;
+    const X = x => L + (x + XR) / (2 * XR) * (w - L - R), Y = v => Tp + (1 - v) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let v = 0; v <= 1.001; v += 0.5){ ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v.toFixed(1), L - 5, Y(v)); }
+    const NP = Math.max(300, Math.floor(w - L - R)), vals = [];
+    for (let i = 0; i <= NP; i++){ const x = -XR + 2 * XR * i / NP; vals.push(slitAmplitude(x, P.lam, P.d, P.m).I); }
+    // strip
+    const stripY = h - B + 28, stripH = 20;
+    for (let i = 0; i < NP; i++){ const g = Math.round(255 * Math.pow(vals[i], 0.6)); ctx.fillStyle = 'rgb(' + Math.round(g * 0.35) + ',' + g + ',' + Math.round(g * 0.45) + ')'; ctx.fillRect(X(-XR + 2 * XR * i / NP), stripY, (w - L - R) / NP + 1, stripH); }
+    ctx.strokeStyle = css('--line'); ctx.strokeRect(L, stripY, w - L - R, stripH);
+    ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2; ctx.beginPath();
+    vals.forEach((v, i) => { const x = -XR + 2 * XR * i / NP; i ? ctx.lineTo(X(x), Y(v)) : ctx.moveTo(X(x), Y(v)); }); ctx.stroke();
+    ctx.fillStyle = css('--muted'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    for (let x = -10; x <= 10; x += 5){ ctx.fillText(String(x), X(x), stripY + stripH + 4); }
+    ctx.fillText('스크린 위치 x (mm)', (L + w - R) / 2, stripY + stripH + 20);
+    // marker
+    ctx.strokeStyle = css('--user'); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(P.x), Tp); ctx.lineTo(X(P.x), stripY + stripH); ctx.stroke();
+    ctx.fillStyle = css('--user'); ctx.beginPath(); ctx.arc(X(P.x), Y(am.I), 6, 0, 7); ctx.fill();
+  }
+  function drawPhasorD(P, am){
+    const {ctx, w, h} = setup($('cPh'), 0.72, 260);
+    const n = am.n, sc = Math.min(w, h) * 0.42 / n; // total length n*... max sum = n(2 slits*m arrows = n)
+    // find bounds
+    const pts = [[0, 0]]; am.arrows.forEach(a => { const p = pts[pts.length - 1]; pts.push([p[0] + Math.cos(a.ph), p[1] + Math.sin(a.ph)]); });
+    let x0 = 0, x1 = 0, y0 = 0, y1 = 0; pts.forEach(p => { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+    const span = Math.max(x1 - x0, y1 - y0, 2), s2 = (Math.min(w, h) - 70) / span;
+    const cx = w / 2 - (x0 + x1) / 2 * s2, cy = h / 2 + (y0 + y1) / 2 * s2;
+    const X = x => cx + x * s2, Y = y => cy - y * s2;
+    ctx.clearRect(0, 0, w, h); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(8, Y(0)); ctx.lineTo(w - 8, Y(0)); ctx.moveTo(X(0), 8); ctx.lineTo(X(0), h - 8); ctx.stroke();
+    ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(X(0), Y(0), s2, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    am.arrows.forEach((a, i) => { const p = pts[i], q = pts[i + 1]; arrow(ctx, X(p[0]), Y(p[1]), X(q[0]), Y(q[1]), a.slit === 0 ? css('--accent') : css('--warn'), n > 6 ? 2 : 3, n > 6 ? 6 : 10); });
+    const last = pts[pts.length - 1]; arrow(ctx, X(0), Y(0), X(last[0]), Y(last[1]), css('--user'), 4, 13);
+    ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    ctx.fillText('점선 원 = 화살표 한 개의 길이(1)  ·  합의 길이 ' + am.mag.toFixed(2) + ' / 최대 ' + n, w / 2, h - 4);
+  }
+  ['xs', 'ds', 'ls', 'ms'].forEach(id => $(id).addEventListener('input', update2));
+
+  function all(){ update1(); update2(); }
+  window.addEventListener('resize', all);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', all);
+  all();
+})();
+
+</script>
+</body>
+</html>
