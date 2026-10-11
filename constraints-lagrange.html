@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>구속조건과 라그랑주 승수 쉽게 이해하기</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<script defer src="katex/katex.min.js"></script>
+<script defer src="katex/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
+  --accent:#2563eb; --true:#16a34a; --user:#e11d48; --warn:#b45309; --soft:#eef3ff; --code:#eef1f7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10141c; --card:#182030; --text:#e8ecf5; --muted:#a3adc2; --line:#2b3550;
+    --accent:#7aa2ff; --true:#4ade80; --user:#fb7185; --warn:#fbbf24; --soft:#1b2845; --code:#222c42;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR","Noto Sans CJK KR","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.8;font-size:17px}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.9rem;line-height:1.35;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:0 0 .6em;line-height:1.4}
+h2 .num{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;font-size:.85em;margin-right:.45em}
+@media (prefers-color-scheme: dark){h2 .num{color:#10141c}}
+p{margin:.6em 0}
+.sub{color:var(--muted);margin:0 0 1em}
+section,.summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+.summary{background:var(--soft);border-color:var(--accent)}
+.summary h2{margin-bottom:.3em}
+.summary ol{margin:.3em 0 0;padding-left:1.4em}
+.summary li{margin:.25em 0}
+.eq{background:var(--code);border-radius:10px;padding:12px 16px;margin:.8em 0;font-size:1.15rem;text-align:center;
+  font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;overflow-x:auto;white-space:nowrap}
+.eq small{display:block;font-family:inherit;font-size:.82rem;color:var(--muted);white-space:normal;margin-top:2px}
+.note{border-left:4px solid var(--warn);background:var(--code);padding:8px 14px;border-radius:0 8px 8px 0;margin:.9em 0;font-size:.95rem}
+.term{font-weight:700;color:var(--accent)}
+i.v{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.viz{display:grid;grid-template-columns:1fr;gap:14px}
+canvas{width:100%;display:block;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);margin:6px 2px}
+.legend b{display:inline-block;width:26px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;flex-wrap:wrap}
+.sl label span.val{font-variant-numeric:tabular-nums;font-weight:700}
+input[type=range]{width:100%;height:32px;accent-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+button{font:inherit;font-size:.95rem;padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer;font-weight:600}
+button:hover{background:var(--soft)}
+button.primary{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){button.primary{color:#10141c}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--code);border-radius:10px;padding:8px 12px}
+.readout .lab{font-size:.78rem;color:var(--muted);line-height:1.4}
+.readout .num{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:16px;background:var(--code);border-radius:8px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;width:0;background:var(--user);transition:width .08s}
+.verdict{font-weight:700;margin:6px 0;min-height:1.8em}
+.plotctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.92rem;margin:4px 0}
+select{font:inherit;font-size:.92rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+ul{padding-left:1.3em}
+li{margin:.3em 0}
+dl{margin:0}
+dt{font-weight:700;margin-top:.8em}
+dd{margin:0 0 0 .2em;color:var(--text)}
+
+nav.nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0}
+nav.nav a{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:.92rem;font-weight:600}
+nav.nav a:hover{background:var(--soft);border-color:var(--accent)}
+nav.nav a[aria-current=page]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (prefers-color-scheme: dark){nav.nav a[aria-current=page]{color:#10141c}}
+nav.nav a:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.eqs{margin:.5em 0}
+.step{border-left:4px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.step h3{margin:0 0 .2em;font-size:1.02rem}
+a.link{color:var(--accent);font-weight:700}
+.linkcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:.8em}
+.linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
+.linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
+.linkcards a:hover{background:var(--code)}
+.katex{font-size:1.06em}
+.eq .katex{font-size:1.12em}
+.katex-display{margin:.2em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.eq .katex-display{margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:.8em 0;font-size:.97rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+.tbl th{background:var(--soft)}
+.badge{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--code)}
+.badge.ok{background:var(--true);color:#fff}.badge.no{background:var(--user);color:#fff}
+@media (prefers-color-scheme: dark){.badge.ok,.badge.no{color:#10141c}}
+footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="학습 시리즈">
+  <a href="index.html">① 정상 작용 원리</a>
+  <a href="variational-calculus.html">② 변분법</a>
+  <a href="constraints-lagrange.html" aria-current="page">③ 구속조건·라그랑주 승수</a>
+  <a href="noether.html">④ 뇌터 정리</a>
+  <a href="path-integral.html">⑤ 경로적분</a>
+</nav>
+<header>
+  <h1>🔗 구속조건과 라그랑주 승수</h1>
+  <p class="sub">“이 길 위에서만 움직여야 한다”는 제약이 있을 때 최적과 운동을 어떻게 다루는지 알아봐요.</p>
+</header>
+
+<div class="summary" id="summary">
+  <h2>3줄 요약</h2>
+  <ol>
+    <li>구속조건 $g = 0$은 “점이 이 곡선(면) 위에만 있어야 한다”는 제약이고, 그 위에서 $f$의 극값은 <b>$\nabla f$와 $\nabla g$가 평행한 점</b>, 즉 $\nabla f = \lambda\,\nabla g$에서 나타나요.</li>
+    <li>라그랑주 승수 $\lambda$는 구속조건 변화에 대한 $f$의 민감도이고, 역학에서는 <b>구속력(진자 줄의 장력 같은 힘)</b>의 크기를 알려 줘요.</li>
+    <li>라그랑지안에 $\lambda g$를 더한 <b>확장 라그랑지안</b>으로 구속조건과 운동방정식을 한꺼번에 풀 수 있고, 일반화 좌표를 쓰면 $\lambda$ 없이도 풀 수 있어요.</li>
+  </ol>
+</div>
+
+<section id="what">
+  <h2><span class="num">1</span>구속조건이란?</h2>
+  <p>구슬이 <b>원형 철사</b>에 꿰여 있다면, 구슬은 철사 위에서만 움직일 수 있어요. 막대에 매달린 추도 막대 길이 $\ell$만큼만 떨어져 있어야 해요. 이렇게 “위치가 만족해야 하는 식”을 <span class="term">구속조건(constraint)</span>이라고 해요. 위치와 시간만으로 쓸 수 있는 구속조건</p>
+  <div class="eq">$$g(x, y, \dots, t) = 0$$<small>예) 지름 $R$인 원 위의 구슬: $g = x^2 + y^2 - R^2 = 0$</small></div>
+  <p>을 <span class="term">홀로노믹(holonomic) 구속</span>이라고 불러요. 구속조건이 있으면 자유롭게 움직일 수 없으니 두 가지 방법이 있어요.</p>
+  <ul>
+    <li><b>방법 A: 일반화 좌표</b> — 구속을 아예 만족하는 좌표(예: 원 위의 각도 $\theta$)를 골라 변수를 줄여요.</li>
+    <li><b>방법 B: 라그랑주 승수</b> — 원래 좌표($x$, $y$)를 그대로 쓰고, 구속조건을 “조건 $\times$ 승수”로 식에 넣어요. 이 페이지의 주인공이에요.</li>
+  </ul>
+</section>
+
+<section id="static">
+  <h2><span class="num">2</span>정적 최적화: 기울기가 평행해지는 곳</h2>
+  <p>문제: <b>구속조건 $g(x, y) = 0$ 위에서 $f(x, y)$가 가장 커지는(작아지는) 점</b>을 찾아요. 예를 들어 단위원 위에서 $f = x + y$의 최댓값이에요.</p>
+  <p><span class="term">기울기(gradient) $\nabla f$</span>는 $f$가 가장 가파르게 증가하는 방향을 가리키는 화살표 $\left(\dfrac{\partial f}{\partial x}, \dfrac{\partial f}{\partial y}\right)$예요. 등고선(같은 $f$ 값을 잇는 선)과는 항상 수직이에요.</p>
+  <ul>
+    <li>구속곡선을 따라 조금 움직일 때 $f$가 변하면 아직 극값이 아니에요. 극값이면 곡선 방향(접선)으로의 변화율이 $0$이에요. 즉 $\nabla f$는 접선과 수직이에요.</li>
+    <li>$\nabla g$도 곡선과 수직이에요. 그래서 극값에서는 두 화살표가 <b>같은 직선 위</b>에 놓여요(<b>평행</b>).</li>
+  </ul>
+  <div class="eq">$$\nabla f = \lambda\,\nabla g, \qquad g = 0$$<small>$\lambda$(람다)는 두 화살표의 길이 비율이에요(음수도 가능). 미지수 $x$, $y$, $\lambda$ 세 개에 식이 세 개예요.</small></div>
+  <p>이것은 $\mathcal{L}(x, y, \lambda) = f - \lambda\,g$라는 함수를 $x$, $y$, $\lambda$ 모두에 대해 미분해서 $0$으로 놓은 것과 같아요. $\lambda$로 미분하면 $-g = 0$, 즉 구속조건이 저절로 나와요.</p>
+  <div class="note"><b>예제:</b> 단위원 $g = x^2 + y^2 - 1$ 위에서 $f = x + y$. $\nabla f = (1, 1)$, $\nabla g = (2x, 2y)$이니 $1 = 2\lambda x$, $1 = 2\lambda y$. 그래서 $x = y$이고 $x = y = \pm\dfrac{1}{\sqrt2}$, $\lambda = \pm\dfrac{1}{\sqrt2}$. 최댓값은 $f = \sqrt2$ (점 $\left(\tfrac{1}{\sqrt2}, \tfrac{1}{\sqrt2}\right)$, $\lambda = +\tfrac{1}{\sqrt2}$).</div>
+
+  <h2 style="margin-top:1.2em;font-size:1.1rem">직접 해 보기: 구속곡선 위를 움직여 보세요</h2>
+  <p>배경의 선은 $f$의 <b>등고선</b>이고 (색이 붉을수록 $f$가 커요), 굵은 곡선이 구속조건이에요. 슬라이더로 점을 곡선 위에서 움직이면 <span style="color:var(--accent);font-weight:700">$\nabla f$ (파랑)</span>와 <span style="color:var(--warn);font-weight:700">$\nabla g$ (주황)</span>가 그려져요. 두 화살표가 한 줄로 겹치는 순간이 극값 후보예요. 초록 선은 지금 점을 지나는 $f$ 등고선인데, 극값에서는 구속곡선과 <b>접해요</b>.</p>
+  <div class="viz">
+    <canvas id="cC" width="800" height="600" role="img" aria-label="f의 등고선과 구속곡선, 기울기 벡터"></canvas>
+    <div class="legend"><span><b style="border-color:var(--text)"></b>구속곡선 $g = 0$</span><span><b style="border-color:var(--true)"></b>지금 점의 등고선</span><span><b style="border-color:var(--accent)"></b>$\nabla f$</span><span><b style="border-color:var(--warn)"></b>$\nabla g$</span></div>
+    <div class="plotctl">
+      <label for="fSel">함수 $f$:</label>
+      <select id="fSel"><option value="A">f = x + y</option><option value="B">f = x·y + 0.3x</option></select>
+      <label for="cSel">구속곡선:</label>
+      <select id="cSel"><option value="circle">원 x² + y² = 1</option><option value="ellipse">타원 x²/1.5² + y²/0.8² = 1</option><option value="line">직선 2x + y = 1</option></select>
+    </div>
+    <div class="sl"><label for="uC"><span>곡선 위의 위치</span> <span class="val" id="uCv">0</span></label><input type="range" id="uC" min="0" max="1000" step="1" value="150"></div>
+    <div class="btns"><button class="primary" id="jumpC" type="button">다음 극값 후보로 이동</button><button id="playC" type="button">▶ 한 바퀴 돌리기</button></div>
+    <div class="readout" aria-live="polite">
+      <div><div class="lab">점 $(x, y)$</div><div class="num" id="cXY" style="font-size:1.05rem">—</div></div>
+      <div><div class="lab">$f(x, y)$</div><div class="num" id="cF">—</div></div>
+      <div><div class="lab">$\nabla f$</div><div class="num" id="cGf" style="font-size:1.05rem">—</div></div>
+      <div><div class="lab">$\nabla g$</div><div class="num" id="cGg" style="font-size:1.05rem">—</div></div>
+      <div><div class="lab">$\lambda$ (부호 포함) $= \dfrac{\nabla f\cdot\nabla g}{|\nabla g|^2}$</div><div class="num" id="cLam">—</div></div>
+      <div><div class="lab">두 화살표 사이 각도</div><div class="num" id="cAng">—</div></div>
+    </div>
+    <p class="verdict" id="verdictC"></p>
+    <div><canvas id="cFc" width="800" height="260" role="img" aria-label="곡선을 따라 움직일 때의 f 값"></canvas>
+      <div class="legend"><span>가로: 곡선 위의 위치, 세로: $f$ (점선: 극값 후보)</span></div></div>
+  </div>
+  <div class="note"><b>$\lambda$의 의미:</b> 구속조건을 $g = c$로 바꾸고 $c$를 조금 움직이면 최댓값 $f^*$는 $\dfrac{df^*}{dc} = \lambda$만큼 변해요(경제학의 “그림자 가격”). 위의 예에서 $f^*(c) = \sqrt{2c}$이고 $\lambda = \dfrac{1}{\sqrt2}$이 이것과 같아요. $\lambda$의 값은 $g$를 어떻게 쓰느냐(예: $2g$)에 따라 달라지니 $g$의 정의도 함께 봐야 해요. 직선 + $f = x + y$ 조합에서는 두 화살표가 평행해지는 점이 <b>하나도 없어요</b>. $f$가 직선 위에서 끝없이 커져서 극값이 없기 때문이에요.</div>
+</section>
+
+<section id="mech">
+  <h2><span class="num">3</span>역학으로: 확장 라그랑지안과 구속력</h2>
+  <p>이제 라그랑지안 $L = T - V$에 구속조건을 더해요(역학에서 자주 쓰는 부호 규약. 정적 최적화의 $\mathcal{L} = f - \lambda g$와는 $\lambda$의 부호 정의만 달라요).</p>
+  <div class="eq">$$L' = T - V + \lambda(t)\,g(\mathbf{q})$$<small>$\lambda(t)$는 시간에 따라 변하는 함수예요(미지수). 이 $L'$에 오일러–라그랑주 방정식을 적용해요.</small></div>
+  <p>$\lambda$로 미분하면 $g = 0$이 나오고, $\mathbf q$로 미분하면</p>
+  <div class="eq">$$m\ddot{\mathbf q} = -\nabla V + \lambda\,\nabla g$$</div>
+  <p>예요. 오른쪽 둘째 항 $\lambda\nabla g$가 바로 <span class="term">구속력</span>이에요. 구속곡선에 수직(법선) 방향이라서 곡선을 따라 일을 하지 않아요. 크기를 정하는 것이 $\lambda$예요.</p>
+  <p><b>구슬(또는 막대 끝의 추)</b>이 원점 둘레의 반지름 $\ell$인 원 위에 있고 중력이 $-y$ 방향이라고 해요. 구속은 $g = \tfrac12(x^2 + y^2 - \ell^2) = 0$, $\nabla g = (x, y)$예요. 구속조건을 시간으로 두 번 미분하면(구속이 계속 지켜지려면 $\ddot g = 0$이어야 해요)</p>
+  <div class="eq">$$\dot x^2 + \dot y^2 + x\ddot x + y\ddot y = 0 \;\Longrightarrow\; \lambda = -\frac{m v^2 - m g\, y}{x^2 + y^2}$$</div>
+  <p>가 되고, 추가 가장 아래에서 각도 $\theta$만큼 올라간 위치라면 $y = -\ell\cos\theta$이므로 장력 $T = -\lambda\ell$은 <b>$T = m(\ell\omega^2 + g\cos\theta)$</b>예요. 아래 시뮬레이션은 매 순간 $\lambda$를 이 식으로 구해 $x$, $y$를 그대로 적분해요(<b>승수법</b>).</p>
+
+  <div class="viz">
+    <canvas id="cPd" width="800" height="360" role="img" aria-label="막대에 매달린 추 시뮬레이션"></canvas>
+    <div class="legend"><span><b style="border-color:var(--warn)"></b>구속력 $\lambda\nabla g$ (장력, 길이는 크기에 비례)</span><span><b style="border-color:var(--true);border-top-style:dashed"></b>구속곡선(원)</span></div>
+    <div class="sl"><label for="th0"><span>처음 각도 $\theta_0$</span> <span class="val" id="th0v">60°</span></label><input type="range" id="th0" min="-170" max="170" step="1" value="60"></div>
+    <div class="sl"><label for="w0"><span>처음 각속도 $\omega_0$ (rad/s)</span> <span class="val" id="w0v">0.0</span></label><input type="range" id="w0" min="-6" max="6" step="0.1" value="0"></div>
+    <div class="plotctl">
+      <label for="intg">적분 방법:</label>
+      <select id="intg"><option value="rk4">RK4 (정확)</option><option value="euler">오일러 (거친 1차 방법)</option></select>
+      <label for="dts">시간 간격 $\Delta t$:</label>
+      <select id="dts"><option value="0.002">0.002 s</option><option value="0.01" selected>0.01 s</option><option value="0.02">0.02 s</option><option value="0.05">0.05 s</option></select>
+      <label><input type="checkbox" id="stab"> 구속 안정화(Baumgarte)</label>
+    </div>
+    <div class="btns"><button class="primary" id="pStart" type="button">▶ 시작</button><button id="pPause" type="button">⏸ 일시정지</button><button id="pReset" type="button">↺ 처음으로</button></div>
+    <div class="readout" aria-live="polite">
+      <div><div class="lab">장력 $T = -\lambda r$ (수치)</div><div class="num" id="pT">—</div></div>
+      <div><div class="lab">공식 $m(\ell\omega^2 + g\cos\theta)$</div><div class="num" id="pTa">—</div></div>
+      <div><div class="lab">에너지 오차 $\Delta E / E_0$</div><div class="num" id="pE" style="font-size:1.05rem">—</div></div>
+      <div><div class="lab">구속 드리프트 $\left|\,r - \ell\,\right|$</div><div class="num" id="pD" style="font-size:1.05rem">—</div></div>
+    </div>
+    <p class="verdict" id="verdictP"></p>
+    <div><canvas id="cTt" width="800" height="240" role="img" aria-label="시간에 따른 장력"></canvas>
+      <div class="legend"><span><b style="border-color:var(--user)"></b>수치 장력 $-\lambda r$</span><span><b style="border-color:var(--true);border-top-style:dashed"></b>공식 $m(\ell\omega^2 + g\cos\theta)$</span><span>가로: 시간(s), 세로: 장력(N)</span></div></div>
+    <div><canvas id="cEe" width="800" height="240" role="img" aria-label="에너지 오차와 구속 드리프트의 로그 그래프"></canvas>
+      <div class="legend"><span><b style="border-color:var(--accent)"></b>$|\Delta E / E_0|$</span><span><b style="border-color:var(--warn)"></b>$|r - \ell|$</span><span>세로: 상용로그 눈금(위로 갈수록 오차 큼)</span></div></div>
+  </div>
+  <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
+  <ul>
+    <li>RK4와 작은 $\Delta t$에서는 수치 장력(빨강)이 공식(초록 점선)과 거의 겹치고 에너지 오차와 드리프트도 아주 작아요.</li>
+    <li>“오일러 + 큰 $\Delta t$”를 고르면 구속이 조금씩 깨지고(드리프트가 점점 커져요) 에너지도 어긋나요. $\ddot g = 0$만 풀면 $g = 0$이 오차에 안정적이지 않기 때문이에요.</li>
+    <li>“구속 안정화”를 켜면 $\ddot g + 2\alpha\dot g + \beta^2 g = 0$ 형태로 오차를 스스로 줄이게 만들어서 드리프트가 억제돼요($\alpha = \beta = 8$).</li>
+    <li>$\theta_0$가 크고 처음에 느리면 장력이 작아져요. 각도가 $90^\circ$를 넘으면 $\cos\theta \lt 0$이라 장력이 매우 작아질 수 있어요(너무 작으면 실제 줄은 늘어지지만 막대는 밀 수도 있어요).</li>
+  </ul>
+  <div class="note"><b>일반화 좌표로 풀면?</b> 같은 추를 각도 $\theta$ 하나로 쓰면 $L = \tfrac12 m\ell^2\dot\theta^2 + mg\ell\cos\theta$이고 오일러–라그랑주는 $\ddot\theta = -\dfrac{g}{\ell}\sin\theta$ 하나뿐이에요. 구속은 저절로 지켜지고 $\lambda$도 필요 없어요. 대신 <b>장력(구속력)</b>은 이 식에서 바로 나오지 않아서, 구속력이 궁금하면 승수법이 필요해요. 위 시뮬레이션의 기준 해로도 이 식을 쓸 수 있어요.</div>
+  <div class="note"><b>단순화:</b> 막대가 밀 수도 있는 이상적인 막대(줄이 아니라)로 가정했고, 마찰은 없어요. 장력은 부호가 있는 값이에요.</div>
+</section>
+
+<section id="next">
+  <h2><span class="num">4</span>다음 단계</h2>
+  <ul>
+    <li><b>비홀로노믹 구속</b>: 속도에 의존해서 위치 식으로 적분할 수 없는 구속(예: 미끄러지지 않고 구르는 스케이트 날, 부등식 구속 “벽 밖으로 못 나감”)은 같은 방식으로는 다룰 수 없고 별도의 방법이 필요해요.</li>
+    <li><b>KKT 조건</b>: 부등식 구속($g \le 0$)이 있는 최적화에서 라그랑주 승수를 확장한 조건이에요. 구속이 “작동 중”이면 $\lambda \ge 0$, 아니면 $\lambda = 0$이라는 상보성 조건이 붙어요. 기계학습(SVM)과 경제학에서 많이 쓰여요.</li>
+    <li>이어서 <a class="link" href="noether.html">④ 뇌터 정리</a>에서 대칭과 보존량의 관계를 배우거나, <a class="link" href="variational-calculus.html">② 변분법</a>으로 돌아가 구속이 있는 범함수(현수선, 등주문제)를 생각해 보세요.</li>
+  </ul>
+  <div class="linkcards">
+    <a href="noether.html"><b>④ 뇌터 정리 →</b>대칭이 보존량을 낳는 이유를 짧은 유도와 시뮬레이션으로 확인해요.</a>
+    <a href="path-integral.html"><b>⑤ 경로적분 →</b>양자역학에서는 모든 경로를 더해요.</a>
+  </div>
+</section>
+
+<section id="glossary">
+  <h2><span class="num">5</span>용어 정리</h2>
+  <dl>
+    <dt>구속조건</dt><dd>위치(와 시간)가 만족해야 하는 식 $g = 0$.</dd>
+    <dt>홀로노믹 구속</dt><dd>위치와 시간으로만 쓸 수 있는 구속. 변수를 줄이거나 승수로 다룰 수 있어요.</dd>
+    <dt>기울기 $\nabla f$</dt><dd>$f$가 가장 빨리 증가하는 방향과 그 변화율을 나타내는 벡터.</dd>
+    <dt>등고선</dt><dd>$f$ 값이 같은 점들을 이은 선. 기울기와 수직.</dd>
+    <dt>라그랑주 승수 $\lambda$</dt><dd>$\nabla f = \lambda\nabla g$의 비례 상수. 구속조건에 대한 민감도이자 구속력의 크기.</dd>
+    <dt>확장 라그랑지안</dt><dd>$L' = L + \lambda g$. 구속조건을 식에 포함시킨 라그랑지안.</dd>
+    <dt>구속력</dt><dd>구속을 지키려고 작용하는 힘 $\lambda\nabla g$ (예: 장력, 수직항력).</dd>
+    <dt>일반화 좌표</dt><dd>구속을 자동으로 만족하는 독립 좌표(예: 진자의 각도 $\theta$).</dd>
+    <dt>구속 드리프트</dt><dd>수치 오차 때문에 구속조건이 조금씩 깨지는 현상.</dd>
+    <dt>KKT 조건</dt><dd>부등식 구속이 있는 최적화에서 극값이 되기 위한 조건.</dd>
+  </dl>
+</section>
+
+<footer>이 페이지는 인터넷 연결 없이 동작해요(수식은 함께 배포된 katex 폴더로 그려요). · 사용 값: $g = 9.8$, $m = 1$, $\ell = 1$</footer>
+
+</main>
+<script>
+(function(){function r(){if(typeof renderMathInElement!=='function')return;try{renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+window.renderAllMath=r;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',r);else r();})();
+</script>
+<script>
+//CORE-START
+// ---------- static: Lagrange multiplier on a constraint curve ----------
+const FUNCS = {
+  A: { f: (x, y) => x + y, grad: (x, y) => [1, 1] },
+  B: { f: (x, y) => x * y + 0.3 * x, grad: (x, y) => [y + 0.3, x] }
+};
+const EA = 1.5, EB = 0.8, LN = [0.5, 0, -1 / Math.sqrt(5), 2 / Math.sqrt(5)];
+const CURVES = {
+  circle:  { closed: true,  g: (x, y) => x * x + y * y - 1, gg: (x, y) => [2 * x, 2 * y],
+             pt: u => [Math.cos(2 * Math.PI * u), Math.sin(2 * Math.PI * u)] },
+  ellipse: { closed: true,  g: (x, y) => x * x / (EA * EA) + y * y / (EB * EB) - 1, gg: (x, y) => [2 * x / (EA * EA), 2 * y / (EB * EB)],
+             pt: u => [EA * Math.cos(2 * Math.PI * u), EB * Math.sin(2 * Math.PI * u)] },
+  line:    { closed: false, g: (x, y) => 2 * x + y - 1, gg: (x, y) => [2, 1],
+             pt: u => { const s = (u - 0.5) * 5; return [LN[0] + s * LN[2], LN[1] + s * LN[3]]; } }
+};
+function lagrangeAt(fk, ck, u){
+  const F = FUNCS[fk], C = CURVES[ck], p = C.pt(u), gf = F.grad(p[0], p[1]), gg = C.gg(p[0], p[1]);
+  const dot = gf[0] * gg[0] + gf[1] * gg[1], n2 = gg[0] * gg[0] + gg[1] * gg[1];
+  const cross = gf[0] * gg[1] - gf[1] * gg[0], nf = Math.hypot(gf[0], gf[1]), ng = Math.sqrt(n2);
+  return { x: p[0], y: p[1], f: F.f(p[0], p[1]), gf: gf, gg: gg, lambda: dot / n2, cross: cross,
+           sin: nf * ng > 0 ? Math.abs(cross) / (nf * ng) : 0, cos: nf * ng > 0 ? dot / (nf * ng) : 1, gval: C.g(p[0], p[1]) };
+}
+function findExtrema(fk, ck, N){
+  N = N || 4000; const C = CURVES[ck], out = [];
+  const cr = u => lagrangeAt(fk, ck, u).cross;
+  const last = C.closed ? N : N - 1;
+  let prev = cr(0);
+  for (let i = 0; i < last; i++){
+    const u0 = i / (C.closed ? N : N - 1), u1 = (i + 1) / (C.closed ? N : N - 1), c1 = cr(u1);
+    if (prev === 0 || prev * c1 < 0){
+      let a = u0, b = u1, ca = prev;
+      for (let k = 0; k < 60; k++){ const m = 0.5 * (a + b), cm = cr(m); if (ca * cm <= 0) b = m; else { a = m; ca = cm; } }
+      const u = 0.5 * (a + b), L = lagrangeAt(fk, ck, u), h = 1e-3;
+      const fm = lagrangeAt(fk, ck, C.closed ? (u - h + 1) % 1 : Math.max(0, u - h)).f, fp = lagrangeAt(fk, ck, C.closed ? (u + h) % 1 : Math.min(1, u + h)).f;
+      out.push({ u: u, x: L.x, y: L.y, f: L.f, lambda: L.lambda, kind: (L.f >= fm && L.f >= fp) ? 'max' : ((L.f <= fm && L.f <= fp) ? 'min' : 'other') });
+    }
+    prev = c1;
+  }
+  return out;
+}
+// ---------- mechanics: bead / rod pendulum with multiplier method ----------
+const GR = 9.8, M = 1, LEN = 1, ALPHA = 8, BETA = 8;
+function pendAccel(s, stab){
+  const x = s[0], y = s[1], vx = s[2], vy = s[3], r2 = x * x + y * y;
+  const gdot = x * vx + y * vy, g0 = 0.5 * (r2 - LEN * LEN), Fx = 0, Fy = -M * GR, v2 = vx * vx + vy * vy;
+  const al = stab ? ALPHA : 0, be = stab ? BETA : 0;
+  const lam = -M * (v2 + (x * Fx + y * Fy) / M + 2 * al * gdot + be * be * g0) / r2;
+  return [(Fx + lam * x) / M, (Fy + lam * y) / M, lam];
+}
+function pendStep(s, dt, method, stab){
+  if (method === 'euler'){
+    const a = pendAccel(s, stab), vx = s[2] + dt * a[0], vy = s[3] + dt * a[1];   // semi-implicit (symplectic) Euler
+    return [s[0] + dt * vx, s[1] + dt * vy, vx, vy];
+  }
+  const f = st => { const a = pendAccel(st, stab); return [st[2], st[3], a[0], a[1]]; };
+  const k1 = f(s), s2 = s.map((v, i) => v + 0.5 * dt * k1[i]), k2 = f(s2), s3 = s.map((v, i) => v + 0.5 * dt * k2[i]), k3 = f(s3),
+        s4 = s.map((v, i) => v + dt * k3[i]), k4 = f(s4);
+  return s.map((v, i) => v + dt / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+}
+function pendInit(th0deg, w0){
+  const th = th0deg * Math.PI / 180;
+  return [LEN * Math.sin(th), -LEN * Math.cos(th), LEN * Math.cos(th) * w0, LEN * Math.sin(th) * w0];
+}
+function pendEnergy(s){ return 0.5 * M * (s[2] * s[2] + s[3] * s[3]) + M * GR * s[1]; }
+function pendTension(s, stab){ const a = pendAccel(s, stab), r = Math.hypot(s[0], s[1]); return -a[2] * r; }
+function pendTensionAnalytic(s){
+  const r2 = s[0] * s[0] + s[1] * s[1], om = (s[0] * s[3] - s[1] * s[2]) / r2, cth = -s[1] / Math.sqrt(r2);
+  return M * (LEN * om * om + GR * cth);
+}
+function pendulumTheta(th0deg, w0, T, dt){      // reference: generalized coordinate theta
+  let th = th0deg * Math.PI / 180, w = w0;
+  const f = (t, w) => [w, -GR / LEN * Math.sin(t)];
+  for (let i = 0; i < Math.round(T / dt); i++){
+    const a = f(th, w), b = f(th + 0.5 * dt * a[0], w + 0.5 * dt * a[1]), c = f(th + 0.5 * dt * b[0], w + 0.5 * dt * b[1]), d = f(th + dt * c[0], w + dt * c[1]);
+    th += dt / 6 * (a[0] + 2 * b[0] + 2 * c[0] + d[0]); w += dt / 6 * (a[1] + 2 * b[1] + 2 * c[1] + d[1]);
+  }
+  return th;
+}
+//CORE-END
+
+(function(){
+  if (typeof document === 'undefined') return;
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif';
+  const font = px => px + 'px ' + FONT;
+  function setup(c, ratio, minH){
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 800, h = Math.max(Math.round(w * ratio), minH);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px';
+    const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return { ctx: ctx, w: w, h: h };
+  }
+  function arrow(ctx, x0, y0, x1, y1, color, lw){
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    const L = Math.hypot(x1 - x0, y1 - y0); if (L < 3) return; const ang = Math.atan2(y1 - y0, x1 - x0), hl = Math.min(12, L * 0.5);
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - hl * Math.cos(ang - 0.4), y1 - hl * Math.sin(ang - 0.4)); ctx.lineTo(x1 - hl * Math.cos(ang + 0.4), y1 - hl * Math.sin(ang + 0.4)); ctx.closePath(); ctx.fill();
+  }
+  const sgn = (v, d) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+  const sgnP = (v, d) => (v < 0 ? '−' : '+') + Math.abs(v).toFixed(d);
+
+  /* ===== static demo ===== */
+  const VX0 = -2.4, VX1 = 2.4, VY0 = -1.8, VY1 = 1.8;
+  let fk = 'A', ck = 'circle', ext = [], extIdx = -1, playing = false, lastTs = 0;
+  function contourSegs(F, level, gx, gy, vals){
+    const segs = [];
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++){
+      const v00 = vals[j * (gx + 1) + i], v10 = vals[j * (gx + 1) + i + 1], v01 = vals[(j + 1) * (gx + 1) + i], v11 = vals[(j + 1) * (gx + 1) + i + 1];
+      const pts = [];
+      const edge = (a, b, ax, ay, bx, by) => { if ((a - level) * (b - level) < 0){ const t = (level - a) / (b - a); pts.push([ax + t * (bx - ax), ay + t * (by - ay)]); } };
+      edge(v00, v10, i, j, i + 1, j); edge(v10, v11, i + 1, j, i + 1, j + 1); edge(v01, v11, i, j + 1, i + 1, j + 1); edge(v00, v01, i, j, i, j + 1);
+      if (pts.length === 2) segs.push([pts[0], pts[1]]);
+      else if (pts.length === 4){ segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+    }
+    return segs;
+  }
+  function drawStatic(){
+    const u = parseInt($('uC').value, 10) / 1000, C = CURVES[ck], F = FUNCS[fk], L = lagrangeAt(fk, ck, u);
+    const {ctx, w, h} = setup($('cC'), 0.75, 300);
+    const X = x => (x - VX0) / (VX1 - VX0) * w, Y = y => (VY1 - y) / (VY1 - VY0) * h;
+    ctx.clearRect(0, 0, w, h);
+    const gx = 96, gy = 72, vals = new Array((gx + 1) * (gy + 1)); let fmin = 1e9, fmax = -1e9;
+    for (let j = 0; j <= gy; j++) for (let i = 0; i <= gx; i++){
+      const x = VX0 + (VX1 - VX0) * i / gx, y = VY1 - (VY1 - VY0) * j / gy, v = F.f(x, y); vals[j * (gx + 1) + i] = v; fmin = Math.min(fmin, v); fmax = Math.max(fmax, v);
+    }
+    // tint
+    const cw = w / gx, ch = h / gy;
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++){
+      const t = (vals[j * (gx + 1) + i] - fmin) / (fmax - fmin + 1e-12);
+      ctx.fillStyle = 'rgba(' + Math.round(40 + 215 * t) + ',' + Math.round(110 - 40 * Math.abs(t - 0.5)) + ',' + Math.round(255 - 215 * t) + ',0.16)';
+      ctx.fillRect(i * cw, j * ch, cw + 0.6, ch + 0.6);
+    }
+    const toPx = (p) => [X(VX0 + (VX1 - VX0) * p[0] / gx), Y(VY1 - (VY1 - VY0) * p[1] / gy)];
+    ctx.strokeStyle = css('--muted'); ctx.globalAlpha = 0.45; ctx.lineWidth = 1; ctx.beginPath();
+    const nl = 16; for (let k = 1; k < nl; k++){ const lv = fmin + (fmax - fmin) * k / nl;
+      contourSegs(F, lv, gx, gy, vals).forEach(s => { const a = toPx(s[0]), b = toPx(s[1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+    ctx.strokeStyle = css('--true'); ctx.lineWidth = 2.5; ctx.beginPath();
+    contourSegs(F, L.f, gx, gy, vals).forEach(s => { const a = toPx(s[0]), b = toPx(s[1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke();
+    // axes
+    ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), h); ctx.moveTo(0, Y(0)); ctx.lineTo(w, Y(0)); ctx.stroke();
+    // constraint curve
+    ctx.strokeStyle = css('--text'); ctx.lineWidth = 3.5; ctx.beginPath();
+    for (let i = 0; i <= 400; i++){ const p = C.pt(i / 400); i ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); } ctx.stroke();
+    // extrema markers
+    ext.forEach(e => { ctx.strokeStyle = css('--true'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(X(e.x), Y(e.y), 9, 0, 7); ctx.stroke(); });
+    // arrows
+    const sc = (w / (VX1 - VX0)), cap = 1.3;
+    const arr = (v, k, color, lw) => { let n = Math.hypot(v[0], v[1]) * k; const s = n > cap ? cap / n : 1; const ex = X(L.x) + v[0] * k * s * sc, ey = Y(L.y) - v[1] * k * s * sc; arrow(ctx, X(L.x), Y(L.y), ex, ey, color, lw); };
+    arr(L.gf, 0.5, css('--accent'), 6); arr(L.gg, 0.22, css('--warn'), 3);
+    ctx.fillStyle = css('--user'); ctx.strokeStyle = css('--card'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(X(L.x), Y(L.y), 8, 0, 7); ctx.fill(); ctx.stroke();
+    // readouts
+    $('uCv').textContent = (u * 100).toFixed(0) + '%';
+    $('cXY').textContent = '(' + sgn(L.x, 2) + ', ' + sgn(L.y, 2) + ')';
+    $('cF').textContent = sgn(L.f, 3);
+    $('cGf').textContent = '(' + sgn(L.gf[0], 2) + ', ' + sgn(L.gf[1], 2) + ')';
+    $('cGg').textContent = '(' + sgn(L.gg[0], 2) + ', ' + sgn(L.gg[1], 2) + ')';
+    $('cLam').textContent = sgnP(L.lambda, 3);
+    const ang = Math.acos(Math.max(-1, Math.min(1, L.cos))) * 180 / Math.PI; $('cAng').textContent = ang.toFixed(1) + '°';
+    const par = L.sin < 0.02;
+    $('verdictC').textContent = par ? '✅ ∇f ∥ ∇g — 평행해요! 극값 후보예요 (λ = ' + sgnP(L.lambda, 3) + (L.cos > 0 ? ', 같은 방향' : ', 반대 방향') + ').' :
+      '아직 평행하지 않아요. 곡선을 따라 f가 ' + (L.cross > 0 ? '한쪽' : '반대쪽') + ' 방향으로 변하는 중이에요.';
+    $('verdictC').style.color = par ? css('--true') : '';
+    drawFcurve(u);
+  }
+  function drawFcurve(u){
+    const {ctx, w, h} = setup($('cFc'), 0.3, 200);
+    const Lm = 54, R = 12, Tp = 12, B = 30, N = 300, ys = []; let lo = 1e9, hi = -1e9;
+    for (let i = 0; i <= N; i++){ const v = lagrangeAt(fk, ck, i / N).f; ys.push(v); lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    const pad = (hi - lo) * 0.08 + 1e-6; lo -= pad; hi += pad;
+    const X = t => Lm + t * (w - Lm - R), Y = v => Tp + (hi - v) / (hi - lo) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let k = 0; k <= 4; k++){ const v = lo + (hi - lo) * k / 4; ctx.beginPath(); ctx.moveTo(Lm, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v.toFixed(2), Lm - 6, Y(v)); }
+    ctx.setLineDash([5, 5]); ctx.strokeStyle = css('--true'); ext.forEach(e => { ctx.beginPath(); ctx.moveTo(X(e.u), Tp); ctx.lineTo(X(e.u), h - B); ctx.stroke(); }); ctx.setLineDash([]);
+    ctx.strokeStyle = css('--accent'); ctx.lineWidth = 3; ctx.beginPath(); ys.forEach((v, i) => { i ? ctx.lineTo(X(i / N), Y(v)) : ctx.moveTo(X(i / N), Y(v)); }); ctx.stroke();
+    const cur = lagrangeAt(fk, ck, u); ctx.fillStyle = css('--user'); ctx.beginPath(); ctx.arc(X(u), Y(cur.f), 6, 0, 7); ctx.fill();
+    ctx.fillStyle = css('--muted'); ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('곡선 위의 위치 (0 ~ 100%)', (Lm + w - R) / 2, h - B + 10);
+  }
+  function refreshExt(){ ext = findExtrema(fk, ck); extIdx = -1; }
+  function updateStatic(){ drawStatic(); }
+  $('fSel').addEventListener('change', () => { fk = $('fSel').value; refreshExt(); updateStatic(); });
+  $('cSel').addEventListener('change', () => { ck = $('cSel').value; refreshExt(); updateStatic(); });
+  $('uC').addEventListener('input', () => { playing = false; $('playC').textContent = '▶ 한 바퀴 돌리기'; updateStatic(); });
+  $('jumpC').addEventListener('click', () => {
+    playing = false; $('playC').textContent = '▶ 한 바퀴 돌리기';
+    if (!ext.length){ $('verdictC').textContent = '이 조합에는 극값 후보(평행해지는 점)가 없어요. f가 곡선 위에서 끝없이 커지거나 작아져요.'; return; }
+    extIdx = (extIdx + 1) % ext.length; $('uC').value = Math.round(ext[extIdx].u * 1000); updateStatic();
+  });
+  function frameC(ts){ if (!playing) return; const dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    let u = parseInt($('uC').value, 10) / 1000 + dt * 0.08; if (u > 1) u = CURVES[ck].closed ? u - 1 : 0; $('uC').value = Math.round(u * 1000); updateStatic(); requestAnimationFrame(frameC); }
+  $('playC').addEventListener('click', () => { playing = !playing; $('playC').textContent = playing ? '⏸ 멈추기' : '▶ 한 바퀴 돌리기'; if (playing){ lastTs = performance.now(); requestAnimationFrame(frameC); } });
+
+  /* ===== pendulum demo ===== */
+  let st = null, simT = 0, hist = [], running = false, E0 = 1, nextSample = 0, lastP = 0, diverged = false;
+  function pParams(){ return { th: parseFloat($('th0').value), w0: parseFloat($('w0').value), method: $('intg').value, dt: parseFloat($('dts').value), stab: $('stab').checked }; }
+  function resetP(){
+    const P = pParams(); $('th0v').textContent = P.th + '°'; $('w0v').textContent = P.w0.toFixed(1);
+    st = pendInit(P.th, P.w0); simT = 0; hist = []; nextSample = 0; running = false; diverged = false; E0 = pendEnergy(st); $('pStart').textContent = '▶ 시작'; sample(true); drawPendulum();
+  }
+  function sample(force){
+    const P = pParams(); if (!force && simT < nextSample) return; nextSample = simT + 0.01;
+    const T = pendTension(st, P.stab), Ta = pendTensionAnalytic(st), r = Math.hypot(st[0], st[1]);
+    hist.push({ t: simT, T: T, Ta: Ta, dE: Math.abs((pendEnergy(st) - E0) / (Math.abs(E0) + 1e-9)), dr: Math.abs(r - LEN) });
+    if (hist.length > 4000) hist.shift();
+  }
+  function drawPendulum(){
+    const P = pParams(), {ctx, w, h} = setup($('cPd'), 0.45, 260), cx = w / 2, cy = h * 0.14, sc = Math.min(h * 0.7, w * 0.4) / LEN;
+    ctx.clearRect(0, 0, w, h); const bx = cx + st[0] * sc, by = cy - st[1] * sc;
+    ctx.strokeStyle = css('--true'); ctx.setLineDash([6, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, LEN * sc, 0, 7); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle = css('--muted'); ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.fillStyle = css('--text'); ctx.beginPath(); ctx.arc(cx, cy, 5, 0, 7); ctx.fill();
+    const a = pendAccel(st, P.stab), Fx = a[2] * st[0], Fy = a[2] * st[1], k = 12;
+    arrow(ctx, bx, by, bx + Fx * k, by - Fy * k, css('--warn'), 3.5);
+    arrow(ctx, bx, by, bx, by + M * GR * k, css('--muted'), 2);
+    ctx.fillStyle = css('--user'); ctx.strokeStyle = css('--card'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, 11, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.textAlign = 'left'; ctx.textBaseline = 'top'; ctx.fillText('t = ' + simT.toFixed(2) + ' s   (회색 화살표: 중력)', 10, h - 20);
+    const T = pendTension(st, P.stab), Ta = pendTensionAnalytic(st), r = Math.hypot(st[0], st[1]);
+    const dE = (pendEnergy(st) - E0) / (Math.abs(E0) + 1e-9);
+    $('pT').textContent = sgn(T, 4) + ' N'; $('pTa').textContent = sgn(Ta, 4) + ' N';
+    $('pE').textContent = (dE >= 0 ? '+' : '−') + Math.abs(dE).toExponential(1); $('pD').textContent = Math.abs(r - LEN).toExponential(1) + ' m';
+    $('verdictP').textContent = diverged ? '⚠ 수치가 발산했어요(시간 간격이 너무 커요). 처음으로 돌아가 RK4나 더 작은 Δt를 써 보세요.' :
+      (Math.abs(r - LEN) < 1e-4 && Math.abs(dE) < 1e-3 ? '구속이 잘 지켜지고 에너지도 거의 보존돼요.' : '구속 드리프트 또는 에너지 오차가 눈에 띄어요(수치 오차).');
+    drawTension(); drawErr();
+  }
+  function plotWindow(){ const tEnd = Math.max(10, simT), t0 = tEnd - 10; return [t0, tEnd]; }
+  function drawTension(){
+    const {ctx, w, h} = setup($('cTt'), 0.27, 180), Lm = 54, R = 12, Tp = 12, B = 30, tw = plotWindow(), pts = hist.filter(p => p.t >= tw[0]);
+    let lo = 0, hi = 5; pts.forEach(p => { lo = Math.min(lo, p.T, p.Ta); hi = Math.max(hi, p.T, p.Ta); }); if (!isFinite(hi) || hi > 1e4) hi = 1e4; if (!isFinite(lo) || lo < -1e4) lo = -1e4; hi *= 1.05; lo = lo < 0 ? lo * 1.1 : 0;
+    const X = t => Lm + (t - tw[0]) / 10 * (w - Lm - R), Y = v => Tp + (hi - v) / (hi - lo) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let k = 0; k <= 4; k++){ const v = lo + (hi - lo) * k / 4; ctx.beginPath(); ctx.moveTo(Lm, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v.toFixed(1), Lm - 6, Y(v)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; for (let k = 0; k <= 5; k++){ const t = tw[0] + 2 * k; ctx.fillText(t.toFixed(0), X(t), h - B + 6); }
+    const line = (key, color, dash, lw) => { ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash); ctx.beginPath(); pts.forEach((p, i) => { const y = Math.max(-1e5, Math.min(1e5, p[key])); i ? ctx.lineTo(X(p.t), Y(y)) : ctx.moveTo(X(p.t), Y(y)); }); ctx.stroke(); ctx.setLineDash([]); };
+    line('Ta', css('--true'), [7, 5], 3.5); line('T', css('--user'), [], 2);
+  }
+  function drawErr(){
+    const {ctx, w, h} = setup($('cEe'), 0.27, 180), Lm = 54, R = 12, Tp = 12, B = 30, tw = plotWindow(), pts = hist.filter(p => p.t >= tw[0]);
+    const lo = -12, hi = 1, X = t => Lm + (t - tw[0]) / 10 * (w - Lm - R), Y = v => Tp + (hi - Math.max(lo, Math.min(hi, v))) / (hi - lo) * (h - Tp - B), lg = v => Math.log10(Math.max(v, 1e-13));
+    ctx.clearRect(0, 0, w, h); ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let v = -12; v <= 0; v += 3){ ctx.beginPath(); ctx.moveTo(Lm, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText('1e' + v, Lm - 6, Y(v)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; for (let k = 0; k <= 5; k++){ const t = tw[0] + 2 * k; ctx.fillText(t.toFixed(0), X(t), h - B + 6); }
+    const line = (key, color) => { ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath(); pts.forEach((p, i) => { i ? ctx.lineTo(X(p.t), Y(lg(p[key]))) : ctx.moveTo(X(p.t), Y(lg(p[key]))); }); ctx.stroke(); };
+    line('dE', css('--accent')); line('dr', css('--warn'));
+    ctx.fillStyle = css('--muted'); ctx.textBaseline = 'top'; ctx.fillText('시간 (s)', (Lm + w - R) / 2, h - 14);
+  }
+  function framP(ts){
+    if (!running) return; const P = pParams(), n = Math.max(1, Math.min(300, Math.round((1 / 60) / P.dt)));
+    for (let i = 0; i < n; i++){ st = pendStep(st, P.dt, P.method, P.stab); simT += P.dt; sample(false);
+      if (!st.every(isFinite) || Math.hypot(st[0], st[1]) > 1e3){ diverged = true; running = false; st = st.map(v => isFinite(v) ? Math.max(-1e3, Math.min(1e3, v)) : 0); break; } }
+    drawPendulum(); if (running) requestAnimationFrame(framP); else $('pStart').textContent = '▶ 계속';
+  }
+  $('pStart').addEventListener('click', () => { if (diverged) resetP(); if (running) return; running = true; $('pStart').textContent = '진행 중…'; requestAnimationFrame(framP); });
+  $('pPause').addEventListener('click', () => { running = false; $('pStart').textContent = '▶ 계속'; });
+  $('pReset').addEventListener('click', resetP);
+  ['th0', 'w0', 'intg', 'dts', 'stab'].forEach(id => $(id).addEventListener(id === 'th0' || id === 'w0' ? 'input' : 'change', resetP));
+
+  function all(){ drawStatic(); drawPendulum(); }
+  window.addEventListener('resize', all);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', all);
+  refreshExt(); updateStatic(); resetP();
+  window.__cl = { stepOnce: () => { const P = pParams(); st = pendStep(st, P.dt, P.method, P.stab); simT += P.dt; sample(false); drawPendulum(); } };
+})();
+
+</script>
+</body>
+</html>

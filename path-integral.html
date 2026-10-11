@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>경로적분 쉽게 이해하기</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<script defer src="katex/katex.min.js"></script>
+<script defer src="katex/auto-render.min.js"></script>
 <style>
 :root{
   --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
@@ -82,6 +85,16 @@ a.link{color:var(--accent);font-weight:700}
 .linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
 .linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
 .linkcards a:hover{background:var(--code)}
+.katex{font-size:1.06em}
+.eq .katex{font-size:1.12em}
+.katex-display{margin:.2em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.eq .katex-display{margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:.8em 0;font-size:.97rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+.tbl th{background:var(--soft)}
+.badge{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--code)}
+.badge.ok{background:var(--true);color:#fff}.badge.no{background:var(--user);color:#fff}
+@media (prefers-color-scheme: dark){.badge.ok,.badge.no{color:#10141c}}
 footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 </style>
 </head>
@@ -90,7 +103,9 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <nav class="nav" aria-label="학습 시리즈">
   <a href="index.html">① 정상 작용 원리</a>
   <a href="variational-calculus.html">② 변분법</a>
-  <a href="path-integral.html" aria-current="page">③ 경로적분</a>
+  <a href="constraints-lagrange.html">③ 구속조건·라그랑주 승수</a>
+  <a href="noether.html">④ 뇌터 정리</a>
+  <a href="path-integral.html" aria-current="page">⑤ 경로적분</a>
 </nav>
 <header>
   <h1>🌊 경로적분: 가능한 모든 경로를 한꺼번에 더하기</h1>
@@ -100,9 +115,9 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <div class="summary" id="summary">
   <h2>3줄 요약</h2>
   <ol>
-    <li>양자역학에서 입자는 A에서 B까지 <b>가능한 모든 경로</b>를 “동시에” 지나고, 경로마다 <b>위상 e<sup>iS/ħ</sup></b>(길이 1짜리 회전하는 화살표)를 가져요.</li>
+    <li>양자역학에서 입자는 A에서 B까지 <b>가능한 모든 경로</b>를 “동시에” 지나고, 경로마다 <b>위상 $e^{iS/\hbar}$</b>(길이 $1$짜리 회전하는 화살표)를 가져요.</li>
     <li>모든 화살표를 더한 합의 크기를 제곱한 것이 확률이에요. 고전 경로에서 먼 경로들은 화살표가 빙빙 돌며 <b>서로 상쇄</b>되고, 작용이 정상인 고전 경로 근처만 방향이 맞아 <b>살아남아요</b>.</li>
-    <li>ħ가 작을수록(우리 일상 세계) 살아남는 영역이 좁아져 고전 경로 하나만 남고, 이중 슬릿에서는 두 경로의 화살표 합이 <b>간섭무늬</b>를 만들어요.</li>
+    <li>$\hbar$가 작을수록(우리 일상 세계) 살아남는 영역이 좁아져 고전 경로 하나만 남고, 이중 슬릿에서는 두 경로의 화살표 합이 <b>간섭무늬</b>를 만들어요.</li>
   </ol>
 </div>
 
@@ -115,20 +130,20 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <section id="rule">
   <h2><span class="num">2</span>경로적분의 규칙</h2>
   <ul>
-    <li>경로 하나마다 <span class="term">작용 S</span>를 계산해요(앞 페이지에서 배운 S = ∫(T − V)dt).</li>
-    <li>그 경로의 <span class="term">진폭</span>(확률의 재료가 되는 복소수)은 <i class="v">e<sup>iS/ħ</sup></i>이에요. 크기는 항상 1이고, <span class="term">위상</span> S/ħ만큼 회전한 <b>화살표(phasor)</b>라고 생각하면 돼요.</li>
-    <li><span class="term">ħ</span>(에이치바)는 환산 플랑크 상수로 약 1.05 × 10⁻³⁴ J·s예요. 우리 일상의 작용(J·s 단위로 1 안팎)에 비하면 엄청나게 작은 수예요.</li>
+    <li>경로 하나마다 <span class="term">작용 $S$</span>를 계산해요(앞 페이지에서 배운 $S = \int (T - V)\,dt$).</li>
+    <li>그 경로의 <span class="term">진폭</span>(확률의 재료가 되는 복소수)은 $e^{iS/\hbar}$이에요. 크기는 항상 $1$이고, <span class="term">위상</span> $S/\hbar$만큼 회전한 <b>화살표(phasor)</b>라고 생각하면 돼요.</li>
+    <li><span class="term">$\hbar$</span>(에이치바)는 환산 플랑크 상수로 약 $1.05\times10^{-34}\ \mathrm{J\cdot s}$예요. 우리 일상의 작용($\mathrm{J\cdot s}$ 단위로 $1$ 안팎)에 비하면 엄청나게 작은 수예요.</li>
     <li>모든 경로의 화살표를 <b>벡터로 더해서</b> 합을 구하고, <b>그 길이의 제곱</b>이 도착 확률에 비례해요.</li>
   </ul>
-  <div class="eq">진폭 합 = Σ<sub>모든 경로</sub> e<sup>iS[경로]/ħ</sup> , &nbsp; 확률 ∝ |진폭 합|²</div>
-  <p>왜 고전 경로만 보일까요? 고전 경로 근처에서는 경로를 조금 바꿔도 S가 거의 안 변해서(<b>정상!</b>) 화살표들이 같은 방향을 가리켜요. 그 외 경로에서는 S가 빠르게 변해 화살표가 휙휙 돌고, 더하면 서로 지워져요. 이걸 <span class="term">정상 위상 근사</span>라고 불러요.</p>
+  <div class="eq">$$\text{진폭} = \sum_{\text{모든 경로}} e^{\,iS[\text{경로}]/\hbar}, \qquad \text{확률} \propto \left|\text{진폭}\right|^2$$</div>
+  <p>왜 고전 경로만 보일까요? 고전 경로 근처에서는 경로를 조금 바꿔도 $S$가 거의 안 변해서(<b>정상!</b>) 화살표들이 같은 방향을 가리켜요. 그 외 경로에서는 $S$가 빠르게 변해 화살표가 휙휙 돌고, 더하면 서로 지워져요. 이걸 <span class="term">정상 위상 근사</span>라고 불러요.</p>
 </section>
 
 <section id="demo1">
   <h2><span class="num">3</span>직접 해 보기 ①: 화살표를 더하면 고전 경로만 남는다</h2>
-  <p>앞 페이지의 공을 다시 써요(A, B는 높이 0, 걸리는 시간 2초, g = 9.8, m = 1). 진짜 경로(포물선)에 사인 물결 하나를 크기 <b>a</b>만큼 더한 경로들을 모아 볼게요. 이 경우 작용은 정확히</p>
-  <div class="eq">S(a) = S₀ + c·a² , &nbsp; c = n²π²m/(4T)<small>n은 물결 번호, T = 2초. 위상은 진짜 경로를 기준(0)으로 삼아 (S − S₀)/ħ = c·a²/ħ 로 그려요(전체에 곱해지는 공통 회전은 확률에 영향이 없어요).</small></div>
-  <p>a를 −범위~+범위에서 여러 개 뽑고, 작은 a부터 순서대로 화살표를 <b>꼬리에 머리를 이어</b> 붙여요. 맨 처음 점에서 마지막 점까지 이은 굵은 화살표가 <b>합</b>이에요. 화살표 하나의 길이는 경로 간격(2·범위/N)이라, 합은 적분값에 가까워져요.</p>
+  <p>앞 페이지의 공을 다시 써요(A, B는 높이 $0$, 걸리는 시간 $2$초, $g = 9.8$, $m = 1$). 진짜 경로(포물선)에 사인 물결 하나를 크기 <b>$a$</b>만큼 더한 경로들을 모아 볼게요. 이 경우 작용은 정확히</p>
+  <div class="eq">$$S(a) = S_0 + c\,a^2, \qquad c = \frac{n^2\pi^2 m}{4T}$$<small>$n$은 물결 번호, $T = 2$초. 위상은 진짜 경로를 기준($0$)으로 삼아 $(S - S_0)/\hbar = c\,a^2/\hbar$ 로 그려요(전체에 곱해지는 공통 회전은 확률에 영향이 없어요).</small></div>
+  <p>$a$를 $-$범위~$+$범위에서 여러 개 뽑고, 작은 $a$부터 순서대로 화살표를 <b>꼬리에 머리를 이어</b> 붙여요. 맨 처음 점에서 마지막 점까지 이은 굵은 화살표가 <b>합</b>이에요. 화살표 하나의 길이는 경로 간격($2\times\text{범위}/N$)이라, 합은 적분값에 가까워져요.</p>
 
   <div class="viz">
     <div>
@@ -138,17 +153,17 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
     <div class="cols">
       <div>
         <canvas id="cS" width="500" height="460" role="img" aria-label="화살표를 이어 붙인 나선"></canvas>
-        <div class="legend"><span><b style="border-color:var(--true)"></b>고전 경로 근처 (|a| ≤ a*)</span><span><b style="border-color:var(--muted)"></b>먼 경로</span><span><b style="border-color:var(--user)"></b>합</span></div>
+        <div class="legend"><span><b style="border-color:var(--true)"></b>고전 경로 근처 ($|a| \le a^*$)</span><span><b style="border-color:var(--muted)"></b>먼 경로</span><span><b style="border-color:var(--user)"></b>합</span></div>
       </div>
       <div>
         <canvas id="cF" width="500" height="460" role="img" aria-label="경로 흔들림 크기에 따른 위상"></canvas>
-        <div class="legend"><span>가로: 흔들림 a (m), 세로: 위상(바퀴 수)</span><span>초록 띠: |a| ≤ a*</span></div>
+        <div class="legend"><span>가로: 흔들림 $a$ (m), 세로: 위상(바퀴 수)</span><span>초록 띠: $|a| \le a^*$</span></div>
       </div>
     </div>
 
-    <div class="sl"><label for="hb">ħ (여기서는 “효과적인” 값) <span class="val" id="hbv">1.00</span></label><input type="range" id="hb" min="0" max="1000" step="1" value="338"></div>
-    <div class="sl"><label for="rg">포함할 경로의 범위 |a| ≤ <span class="val" id="rgv">2.00 m</span></label><input type="range" id="rg" min="0.1" max="2.5" step="0.05" value="2"></div>
-    <div class="sl"><label for="np">경로 개수 N <span class="val" id="npv">1000</span></label><input type="range" id="np" min="50" max="4000" step="50" value="1000"></div>
+    <div class="sl"><label for="hb"><span>$\hbar$ (여기서는 “효과적인” 값)</span> <span class="val" id="hbv">1.00</span></label><input type="range" id="hb" min="0" max="1000" step="1" value="338"></div>
+    <div class="sl"><label for="rg"><span>포함할 경로의 범위 $|a| \le$</span> <span class="val" id="rgv">2.00 m</span></label><input type="range" id="rg" min="0.1" max="2.5" step="0.05" value="2"></div>
+    <div class="sl"><label for="np"><span>경로 개수 $N$</span> <span class="val" id="npv">1000</span></label><input type="range" id="np" min="50" max="4000" step="50" value="1000"></div>
     <div class="plotctl">
       <label for="md">물결 번호 n:</label>
       <select id="md"><option value="1">1 (한 번 볼록)</option><option value="2">2 (S자)</option><option value="3">3 (잔물결)</option></select>
@@ -158,11 +173,11 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
       <button class="primary" id="hbSmall" type="button">ħ를 작게 (→ 고전 극한)</button>
     </div>
     <div class="readout" aria-live="polite">
-      <div><div class="lab">경로 하나의 폭 a* = √(πħ/c)<br>(위상이 π 변하는 거리)</div><div class="num" id="rAs">—</div></div>
-      <div><div class="lab">전체 합의 크기 |Σ|</div><div class="num" id="rSum">—</div></div>
-      <div><div class="lab">이론값 √(πħ/c)<br>(범위가 충분히 넓을 때)</div><div class="num" id="rTh">—</div></div>
-      <div><div class="lab">가까운 경로(|a| ≤ a*)만의 합</div><div class="num" id="rNear">—</div></div>
-      <div><div class="lab">먼 경로(|a| &gt; a*): 화살표 총길이 → 합</div><div class="num" id="rNF" style="font-size:1rem">—</div></div>
+      <div><div class="lab">기여하는 폭 $a^* = \sqrt{\pi\hbar/c}$<br>(위상이 $\pi$ 변하는 거리)</div><div class="num" id="rAs">—</div></div>
+      <div><div class="lab">전체 합의 크기 $|\Sigma|$</div><div class="num" id="rSum">—</div></div>
+      <div><div class="lab">이론값 $\sqrt{\pi\hbar/c}$<br>(범위가 충분히 넓을 때)</div><div class="num" id="rTh">—</div></div>
+      <div><div class="lab">가까운 경로($|a| \le a^*$)만의 합</div><div class="num" id="rNear">—</div></div>
+      <div><div class="lab">먼 경로($|a| \gt a^*$): 화살표 총길이 → 합</div><div class="num" id="rNF" style="font-size:1rem">—</div></div>
     </div>
     <p class="verdict" id="verdictP"></p>
   </div>
@@ -170,17 +185,17 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
   <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
   <ul>
     <li>나선은 가운데(고전 경로)에서는 느리게 돌고, 바깥으로 갈수록 점점 빠르게 돌며 작은 원을 그려요(<b>코르뉘 나선</b>). 먼 경로가 더해 주는 건 작은 원들뿐이라 합이 거의 늘지 않아요.</li>
-    <li>범위 슬라이더를 키워도 합의 크기는 이론값 근처에서 출렁일 뿐 커지지 않아요. 결국 <b>a* 정도의 좁은 띠</b>가 합을 정해요.</li>
-    <li>ħ를 줄이면 a*가 √ħ에 비례해 줄어들어요. 즉 <b>고전 극한(ħ → 0)</b>에서는 진짜 경로의 아주 가까운 이웃만 남아요. 그래서 큰 물체는 고전 경로로만 움직이는 것처럼 보여요.</li>
+    <li>범위 슬라이더를 키워도 합의 크기는 이론값 근처에서 출렁일 뿐 커지지 않아요. 결국 <b>$a^*$ 정도의 좁은 띠</b>가 합을 정해요.</li>
+    <li>$\hbar$를 줄이면 $a^*$가 $\sqrt{\hbar}$에 비례해 줄어들어요. 즉 <b>고전 극한($\hbar \to 0$)</b>에서는 진짜 경로의 아주 가까운 이웃만 남아요. 그래서 큰 물체는 고전 경로로만 움직이는 것처럼 보여요.</li>
   </ul>
-  <div class="note"><b>솔직한 한계:</b> 실제 경로적분은 경로의 모든 모양(무한 개의 물결)을 한꺼번에 더해요. 여기서는 물결 <b>하나</b>의 크기만 바꾼 한 줄짜리 경로 모음을 시각화한 단순화 예시예요. 또 N개 경로를 일정 간격으로 더한 이산 근사이고, 공통 규격화 상수는 생략했어요. 이 계는 S가 a의 정확한 이차식이라 정상 위상 근사가 잘 맞는 편이에요.</div>
+  <div class="note"><b>솔직한 한계:</b> 실제 경로적분은 경로의 모든 모양(무한 개의 물결)을 한꺼번에 더해요. 여기서는 물결 <b>하나</b>의 크기만 바꾼 한 줄짜리 경로 모음을 시각화한 단순화 예시예요. 또 N개 경로를 일정 간격으로 더한 이산 근사이고, 공통 규격화 상수는 생략했어요. 이 계는 $S$가 $a$의 정확한 이차식이라 정상 위상 근사가 잘 맞는 편이에요.</div>
 </section>
 
 <section id="demo2">
   <h2><span class="num">4</span>직접 해 보기 ②: 이중 슬릿, 두 경로의 합</h2>
-  <p>왼쪽의 광원(또는 전자총)에서 나온 입자가 슬릿 두 개 중 하나를 지나 오른쪽 스크린의 한 점에 도착해요. 광원에서 슬릿까지 500 mm, 슬릿에서 스크린까지 1000 mm예요. 정해진 파장 λ인 입자는 경로 길이 ℓ를 따라 위상이 <b>2πℓ/λ</b>만큼 쌓여요(자유입자의 작용에서 나오는 결과를 단순화한 것). 스크린의 점 x에 도착하는 두 경로의 화살표를 더하면 그 점의 밝기가 나와요.</p>
+  <p>왼쪽의 광원(또는 전자총)에서 나온 입자가 슬릿 두 개 중 하나를 지나 오른쪽 스크린의 한 점에 도착해요. 광원에서 슬릿까지 500 mm, 슬릿에서 스크린까지 1000 mm예요. 정해진 파장 $\lambda$인 입자는 경로 길이 $\ell$을 따라 위상이 <b>$2\pi\ell/\lambda$</b>만큼 쌓여요(자유입자의 작용에서 나오는 결과를 단순화한 것). 스크린의 점 $x$에 도착하는 두 경로의 화살표를 더하면 그 점의 밝기가 나와요.</p>
   <ul>
-    <li>두 경로 길이 차이가 파장의 <b>정수배</b> → 화살표가 같은 방향 → 합이 2배 → 확률 4배(밝음, 보강간섭)</li>
+    <li>두 경로 길이 차이가 파장의 <b>정수배</b> → 화살표가 같은 방향 → 합이 $2$배 → 확률 4배(밝음, 보강간섭)</li>
     <li>길이 차이가 파장의 <b>반(半)정수배</b> → 화살표가 반대 방향 → 합이 0(어둠, 상쇄간섭)</li>
   </ul>
   <div class="viz">
@@ -192,21 +207,21 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
       <div><canvas id="cPh" width="500" height="360" role="img" aria-label="선택한 위치의 화살표 합"></canvas>
         <div class="legend"><span><b style="border-color:var(--accent)"></b>슬릿 1</span><span><b style="border-color:var(--warn)"></b>슬릿 2</span><span><b style="border-color:var(--user)"></b>합</span></div></div>
     </div>
-    <div class="sl"><label for="xs">스크린 위치 x <span class="val" id="xsv">0.00 mm</span></label><input type="range" id="xs" min="-10" max="10" step="0.05" value="1.2"></div>
-    <div class="sl"><label for="ds">슬릿 간격 d <span class="val" id="dsv">0.30 mm</span></label><input type="range" id="ds" min="0.12" max="0.6" step="0.01" value="0.3"></div>
-    <div class="sl"><label for="ls">파장 λ <span class="val" id="lsv">500 nm</span></label><input type="range" id="ls" min="300" max="800" step="10" value="500"></div>
-    <div class="sl"><label for="ms">슬릿 하나당 경로 수 <span class="val" id="msv">1</span></label><input type="range" id="ms" min="1" max="7" step="1" value="1"></div>
+    <div class="sl"><label for="xs"><span>스크린 위치 $x$</span> <span class="val" id="xsv">0.00 mm</span></label><input type="range" id="xs" min="-10" max="10" step="0.05" value="1.2"></div>
+    <div class="sl"><label for="ds"><span>슬릿 간격 $d$</span> <span class="val" id="dsv">0.30 mm</span></label><input type="range" id="ds" min="0.12" max="0.6" step="0.01" value="0.3"></div>
+    <div class="sl"><label for="ls"><span>파장 $\lambda$</span> <span class="val" id="lsv">500 nm</span></label><input type="range" id="ls" min="300" max="800" step="10" value="500"></div>
+    <div class="sl"><label for="ms"><span>슬릿 하나당 경로 수</span> <span class="val" id="msv">1</span></label><input type="range" id="ms" min="1" max="7" step="1" value="1"></div>
     <div class="readout" aria-live="polite">
-      <div><div class="lab">경로 길이 차이 ÷ 파장</div><div class="num" id="dL">—</div></div>
+      <div><div class="lab">경로 길이 차이 $\div$ 파장</div><div class="num" id="dL">—</div></div>
       <div><div class="lab">화살표 합의 크기 / 최대</div><div class="num" id="sA">—</div></div>
-      <div><div class="lab">상대 밝기 (확률 ∝ |합|²)</div><div class="num" id="sI">—</div></div>
-      <div><div class="lab">무늬 간격 ≈ λ·L₂/d</div><div class="num" id="sF">—</div></div>
+      <div><div class="lab">상대 밝기 (확률 $\propto |\text{합}|^2$)</div><div class="num" id="sI">—</div></div>
+      <div><div class="lab">무늬 간격 $\approx \lambda L_2/d$</div><div class="num" id="sF">—</div></div>
     </div>
     <p class="verdict" id="verdictD"></p>
   </div>
   <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
   <ul>
-    <li>간격 d를 키우면 줄무늬가 촘촘해지고, 파장 λ를 키우면 넓어져요(무늬 간격 ≈ λ·L₂/d).</li>
+    <li>간격 $d$를 키우면 줄무늬가 촘촘해지고, 파장 $\lambda$를 키우면 넓어져요(무늬 간격 $\approx \lambda L_2/d$).</li>
     <li>슬릿 하나당 경로 수를 늘리면(슬릿 폭 0.06 mm 안에 경로를 여러 개 놓는 것) 가장자리에서 밝기가 서서히 줄어드는 <b>큰 포락선</b>이 생겨요. 경로가 많아질수록 현실의 “폭이 있는 슬릿”에 가까워져요.</li>
   </ul>
   <div class="note"><b>단순화:</b> 슬릿 안의 경로를 몇 개만 골랐고, 슬릿을 지나는 곧은 경로만 더했어요(곡선·꺾인 경로, 진폭 감소 인자는 생략). 그래도 “화살표 합 → 밝기”라는 핵심은 실제 계산과 같아요.</div>
@@ -215,8 +230,8 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <section id="further">
   <h2><span class="num">5</span>더 읽어 볼 거리</h2>
   <ul>
-    <li><b>전파자(propagator)</b>: A에서 B로 갈 진폭 <i class="v">K(B, A)</i>를 모든 경로의 합으로 쓴 것이 정식 경로적분이에요. 이 K를 알면 파동함수가 시간에 따라 어떻게 변하는지 알 수 있어요.</li>
-    <li><b>윅 회전</b>: 시간을 허수로 바꾸는 수학적 기법이에요(t → −iτ). 그러면 e<sup>iS/ħ</sup>의 회전하는 화살표가 e<sup>−S/ħ</sup> 꼴의 <b>줄어드는 가중치</b>로 바뀌어 계산이 쉬워지고, 통계역학과 이어져요.</li>
+    <li><b>전파자(propagator)</b>: A에서 B로 갈 진폭 $K(B, A)$를 모든 경로의 합으로 쓴 것이 정식 경로적분이에요. 이 $K$를 알면 파동함수가 시간에 따라 어떻게 변하는지 알 수 있어요.</li>
+    <li><b>윅 회전</b>: 시간을 허수로 바꾸는 수학적 기법이에요($t \to -i\tau$). 그러면 $e^{iS/\hbar}$의 회전하는 화살표가 $e^{-S_E/\hbar}$ 꼴의 <b>줄어드는 가중치</b>($S_E$는 허수 시간에서의 작용)로 바뀌어 계산이 쉬워지고, 통계역학과 이어져요.</li>
     <li>이 페이지의 합은 눈으로 보기 위한 <b>이산 시각화</b>예요. 엄밀한 정의(측도, 규격화)는 대학원 수준의 양자역학·장이론 교재에서 다뤄요. 파인만의 <i>QED</i>(일반인용)나 Feynman &amp; Hibbs의 <i>Quantum Mechanics and Path Integrals</i>를 추천해요.</li>
     <li>수학이 궁금하면 <a class="link" href="variational-calculus.html">② 변분법</a>, 원리의 큰 그림은 <a class="link" href="index.html">① 정상 작용 원리</a>로 돌아가 보세요.</li>
   </ul>
@@ -227,20 +242,24 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
   <dl>
     <dt>경로적분</dt><dd>가능한 모든 경로의 기여를 더해 양자 진폭을 구하는 방법(파인만).</dd>
     <dt>진폭</dt><dd>확률의 재료가 되는 복소수. 확률은 진폭 크기의 제곱.</dd>
-    <dt>위상</dt><dd>복소수 화살표가 가리키는 각도. 여기서는 S/ħ.</dd>
-    <dt>화살표(phasor)</dt><dd>크기 1, 방향이 위상인 화살표. 더할 땐 벡터처럼 이어 붙여요.</dd>
-    <dt>ħ (환산 플랑크 상수)</dt><dd>약 1.05×10⁻³⁴ J·s. 양자 효과의 크기를 정하는 상수.</dd>
+    <dt>위상</dt><dd>복소수 화살표가 가리키는 각도. 여기서는 $S/\hbar$.</dd>
+    <dt>화살표(phasor)</dt><dd>크기 $1$, 방향이 위상인 화살표. 더할 땐 벡터처럼 이어 붙여요.</dd>
+    <dt>$\hbar$ (환산 플랑크 상수)</dt><dd>약 $1.05\times10^{-34}\ \mathrm{J\cdot s}$. 양자 효과의 크기를 정하는 상수.</dd>
     <dt>정상 위상 근사</dt><dd>작용이 정상인 경로 근처의 기여만 살아남고 나머지는 상쇄된다는 근사.</dd>
     <dt>간섭 (보강/상쇄)</dt><dd>화살표가 같은 방향이면 커지고(보강), 반대 방향이면 지워지는(상쇄) 현상.</dd>
-    <dt>고전 극한</dt><dd>ħ가 작아 양자 효과가 안 보이고 고전 경로만 남는 상황.</dd>
-    <dt>파장 λ</dt><dd>파동의 한 주기 길이. 입자의 운동량 p와 λ = h/p (h = 2πħ)로 연결돼요.</dd>
+    <dt>고전 극한</dt><dd>$\hbar$가 작아 양자 효과가 안 보이고 고전 경로만 남는 상황.</dd>
+    <dt>파장 $\lambda$</dt><dd>파동의 한 주기 길이. 입자의 운동량 $p$와 $\lambda = h/p$ ($h = 2\pi\hbar$)로 연결돼요.</dd>
     <dt>전파자 / 윅 회전</dt><dd>A→B 진폭을 주는 함수 / 시간을 허수로 바꿔 계산을 쉽게 하는 기법.</dd>
   </dl>
 </section>
 
-<footer>이 페이지는 인터넷 연결 없이 이 파일 하나로 동작해요. · 데모 ①: g = 9.8, m = 1, T = 2초</footer>
+<footer>이 페이지는 인터넷 연결 없이 동작해요(수식은 함께 배포된 katex 폴더로 그려요). · 데모 ①: $g = 9.8$, $m = 1$, $T = 2$초</footer>
 
 </main>
+<script>
+(function(){function r(){if(typeof renderMathInElement!=='function')return;try{renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+window.renderAllMath=r;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',r);else r();})();
+</script>
 <script>
 //CORE-START
 const G = 9.8, M = 1, TT = 2;

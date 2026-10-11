@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>뇌터 정리 쉽게 이해하기</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<script defer src="katex/katex.min.js"></script>
+<script defer src="katex/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
+  --accent:#2563eb; --true:#16a34a; --user:#e11d48; --warn:#b45309; --soft:#eef3ff; --code:#eef1f7;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#10141c; --card:#182030; --text:#e8ecf5; --muted:#a3adc2; --line:#2b3550;
+    --accent:#7aa2ff; --true:#4ade80; --user:#fb7185; --warn:#fbbf24; --soft:#1b2845; --code:#222c42;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕","Noto Sans KR","Noto Sans CJK KR","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  line-height:1.8;font-size:17px}
+main{max-width:860px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:1.9rem;line-height:1.35;margin:.2em 0 .3em}
+h2{font-size:1.35rem;margin:0 0 .6em;line-height:1.4}
+h2 .num{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;min-width:1.7em;height:1.7em;line-height:1.7em;text-align:center;font-size:.85em;margin-right:.45em}
+@media (prefers-color-scheme: dark){h2 .num{color:#10141c}}
+p{margin:.6em 0}
+.sub{color:var(--muted);margin:0 0 1em}
+section,.summary{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:18px 0}
+.summary{background:var(--soft);border-color:var(--accent)}
+.summary h2{margin-bottom:.3em}
+.summary ol{margin:.3em 0 0;padding-left:1.4em}
+.summary li{margin:.25em 0}
+.eq{background:var(--code);border-radius:10px;padding:12px 16px;margin:.8em 0;font-size:1.15rem;text-align:center;
+  font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;overflow-x:auto;white-space:nowrap}
+.eq small{display:block;font-family:inherit;font-size:.82rem;color:var(--muted);white-space:normal;margin-top:2px}
+.note{border-left:4px solid var(--warn);background:var(--code);padding:8px 14px;border-radius:0 8px 8px 0;margin:.9em 0;font-size:.95rem}
+.term{font-weight:700;color:var(--accent)}
+i.v{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.viz{display:grid;grid-template-columns:1fr;gap:14px}
+canvas{width:100%;display:block;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--muted);margin:6px 2px}
+.legend b{display:inline-block;width:26px;height:0;border-top:3px solid;vertical-align:middle;margin-right:6px}
+.sl{margin:10px 0}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.95rem;flex-wrap:wrap}
+.sl label span.val{font-variant-numeric:tabular-nums;font-weight:700}
+input[type=range]{width:100%;height:32px;accent-color:var(--accent)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+button{font:inherit;font-size:.95rem;padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--card);color:var(--accent);cursor:pointer;font-weight:600}
+button:hover{background:var(--soft)}
+button.primary{background:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){button.primary{color:#10141c}}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0}
+.readout div{background:var(--code);border-radius:10px;padding:8px 12px}
+.readout .lab{font-size:.78rem;color:var(--muted);line-height:1.4}
+.readout .num{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+.bar{height:16px;background:var(--code);border-radius:8px;overflow:hidden;margin-top:4px}
+.bar>i{display:block;height:100%;width:0;background:var(--user);transition:width .08s}
+.verdict{font-weight:700;margin:6px 0;min-height:1.8em}
+.plotctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.92rem;margin:4px 0}
+select{font:inherit;font-size:.92rem;padding:4px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+ul{padding-left:1.3em}
+li{margin:.3em 0}
+dl{margin:0}
+dt{font-weight:700;margin-top:.8em}
+dd{margin:0 0 0 .2em;color:var(--text)}
+
+nav.nav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;padding:0}
+nav.nav a{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:.92rem;font-weight:600}
+nav.nav a:hover{background:var(--soft);border-color:var(--accent)}
+nav.nav a[aria-current=page]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (prefers-color-scheme: dark){nav.nav a[aria-current=page]{color:#10141c}}
+nav.nav a:focus-visible{outline:3px solid var(--warn);outline-offset:2px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.eqs{margin:.5em 0}
+.step{border-left:4px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+.step h3{margin:0 0 .2em;font-size:1.02rem}
+a.link{color:var(--accent);font-weight:700}
+.linkcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:.8em}
+.linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
+.linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
+.linkcards a:hover{background:var(--code)}
+.katex{font-size:1.06em}
+.eq .katex{font-size:1.12em}
+.katex-display{margin:.2em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.eq .katex-display{margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:.8em 0;font-size:.97rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+.tbl th{background:var(--soft)}
+.badge{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--code)}
+.badge.ok{background:var(--true);color:#fff}.badge.no{background:var(--user);color:#fff}
+@media (prefers-color-scheme: dark){.badge.ok,.badge.no{color:#10141c}}
+footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
+</style>
+</head>
+<body>
+<main>
+<nav class="nav" aria-label="학습 시리즈">
+  <a href="index.html">① 정상 작용 원리</a>
+  <a href="variational-calculus.html">② 변분법</a>
+  <a href="constraints-lagrange.html">③ 구속조건·라그랑주 승수</a>
+  <a href="noether.html" aria-current="page">④ 뇌터 정리</a>
+  <a href="path-integral.html">⑤ 경로적분</a>
+</nav>
+<header>
+  <h1>⚖️ 뇌터 정리: 대칭이 있으면 보존되는 것이 있다</h1>
+  <p class="sub">에너지·운동량·각운동량이 “왜” 보존되는지를 한 문장으로 설명하는 정리예요.</p>
+</header>
+
+<div class="summary" id="summary">
+  <h2>3줄 요약</h2>
+  <ol>
+    <li>뇌터 정리: 작용 $S$를 바꾸지 않는 <b>연속적인 대칭</b>이 있으면, 그에 대응하는 <b>보존량</b>이 반드시 하나 있어요.</li>
+    <li>시간 이동 대칭은 <b>에너지</b>, 공간 이동 대칭은 <b>운동량</b>, 회전 대칭은 <b>각운동량</b>의 보존을 낳아요.</li>
+    <li>대칭을 깨뜨리면(예: 퍼텐셜에 방향성을 주거나 시간에 따라 바꾸면) 대응하는 양이 흔들리기 시작해요. 아래 시뮬레이션에서 직접 확인해 봐요.</li>
+  </ol>
+</div>
+
+<section id="idea">
+  <h2><span class="num">1</span>대칭이 있으면 보존량이 생긴다</h2>
+  <p><span class="term">대칭</span>이란 “무언가를 바꿔도 달라지지 않는 성질”이에요. 물리에서는 <b>계를 어떤 변환으로 옮겨도 작용(그래서 운동법칙)이 그대로인 것</b>을 뜻해요. 예를 들어 실험실을 오른쪽으로 1 m 옮겨도 같은 실험 결과가 나온다면 “공간 이동에 대한 대칭”이 있는 거예요.</p>
+  <table class="tbl">
+    <tr><th>대칭(변환)</th><th>의미</th><th>보존량</th></tr>
+    <tr><td>시간 이동 $t \to t + \epsilon$</td><td>실험을 언제 해도 같다</td><td>에너지 $E$</td></tr>
+    <tr><td>공간 이동 $x \to x + \epsilon$</td><td>실험을 어디서 해도 같다</td><td>운동량 $p$</td></tr>
+    <tr><td>회전 $\varphi \to \varphi + \epsilon$</td><td>실험을 어느 방향으로 해도 같다</td><td>각운동량 $L$</td></tr>
+  </table>
+  <p>이 대응 관계를 수학적으로 정리한 사람이 독일의 수학자 에미 뇌터(Emmy Noether, 1918)예요.</p>
+</section>
+
+<section id="theorem">
+  <h2><span class="num">2</span>정리와 짧은 유도</h2>
+  <p><b>정리(간단한 버전).</b> 라그랑지안 $L(q, \dot q, t)$로 쓰이는 계에서, 경로를 $q \to q + \epsilon K(q)$로 조금 바꿔도 $L$이 변하지 않으면(<b>연속 대칭</b>, $\epsilon$은 작은 수, $K$는 변환의 모양), 다음 양이 시간에 따라 변하지 않아요.</p>
+  <div class="eq">$$Q = \frac{\partial L}{\partial \dot q}\,K(q) \qquad \left(\frac{dQ}{dt} = 0\right)$$</div>
+  <div class="step"><h3>유도 (변수 1개 $q$)</h3>
+    <p><b>1단계.</b> 대칭이라는 것은 $\epsilon$에 대한 $L$의 1차 변화가 $0$이라는 뜻이에요. $q$가 $\epsilon K$만큼, $\dot q$가 $\epsilon \dot K$만큼 변하니까</p>
+    <div class="eq">$$\delta L = \frac{\partial L}{\partial q}\,K + \frac{\partial L}{\partial \dot q}\,\dot K = 0$$</div>
+    <p><b>2단계.</b> 실제 운동에서는 오일러–라그랑주 방정식 $\dfrac{\partial L}{\partial q} = \dfrac{d}{dt}\dfrac{\partial L}{\partial \dot q}$가 성립해요. 이것을 1단계에 넣으면</p>
+    <div class="eq">$$\frac{d}{dt}\!\left(\frac{\partial L}{\partial \dot q}\right) K + \frac{\partial L}{\partial \dot q}\,\dot K = \frac{d}{dt}\!\left(\frac{\partial L}{\partial \dot q}\,K\right) = 0$$<small>곱의 미분법 $(uv)' = u'v + uv'$를 거꾸로 쓴 거예요.</small></div>
+    <p><b>3단계.</b> 시간에 대한 미분이 $0$이니 $Q = \dfrac{\partial L}{\partial \dot q}K$는 상수예요. ∎</p></div>
+  <h2 style="font-size:1.05rem;margin-top:1em">예시</h2>
+  <ul>
+    <li><b>공간 이동</b>: $L = \tfrac12 m\dot q^2 - V(q)$에서 $V$가 $q$와 무관하면 $q \to q + \epsilon$($K = 1$)가 대칭이에요. $Q = m\dot q = p$, 즉 <b>운동량 보존</b>.</li>
+    <li><b>회전</b>: 평면에서 $(x, y) \to (x - \epsilon y,\; y + \epsilon x)$ ($K = (-y, x)$)가 대칭이면 $Q = p_x(-y) + p_y\,x = x p_y - y p_x = L_z$, 즉 <b>각운동량 보존</b>. (변수가 여러 개이면 $Q = \sum_i \dfrac{\partial L}{\partial \dot q_i}K_i$.)</li>
+    <li><b>시간 이동</b>: $L$이 $t$를 직접 포함하지 않으면 보존돼요. 시간 이동은 $q$를 바꾸는 변환이 아니라서 따로 보면, 오일러–라그랑주를 쓸 때 $\dfrac{dL}{dt} = \dfrac{d}{dt}\!\left(\dot q\,\dfrac{\partial L}{\partial \dot q}\right) + \dfrac{\partial L}{\partial t}$가 되고 정리하면
+      <div class="eq">$$\frac{d}{dt}\!\left(\dot q\,\frac{\partial L}{\partial \dot q} - L\right) = -\frac{\partial L}{\partial t}$$<small>$E = \dot q\,\partial L/\partial\dot q - L$ ($= T + V$). $L$이 $t$를 직접 포함하지 않으면 $\partial L/\partial t = 0$이라 $E$가 보존돼요.</small></div></li>
+  </ul>
+  <div class="note"><b>단순화:</b> $\delta L = 0$이 정확히 성립하는 경우만 다뤘어요. 일반적으로는 $\delta L$이 어떤 함수의 시간 미분 $\dfrac{dF}{dt}$이기만 해도 되고(준대칭), 이때 보존량은 $Q = \dfrac{\partial L}{\partial \dot q}K - F$예요.</div>
+</section>
+
+<section id="demoA">
+  <h2><span class="num">3</span>직접 해 보기 ①: 대칭이 깨지면 보존량이 흔들린다</h2>
+  <p>질량 $m = 1$인 입자가 2차원 평면에서 퍼텐셜 $V(x, y)$ 안을 움직여요. 세 가지 양을 매 순간 계산해서 그래프로 그려요. 완전한 대칭이면 그래프가 <b>평평</b>하고, 대칭이 깨지면 <b>변해요</b>.</p>
+  <div class="eq" style="white-space:normal">$$p_x = m\dot x, \qquad L_z = x\,p_y - y\,p_x, \qquad E = \tfrac12 m(\dot x^2 + \dot y^2) + V(x, y)$$</div>
+  <table class="tbl">
+    <tr><th>퍼텐셜</th><th>$p_x$</th><th>$L_z$</th><th>$E$</th></tr>
+    <tr><td>$x$-이동 대칭: $V = \tfrac12 y^2 + 0.1\,y^4$ ($x$가 없음)</td><td>보존</td><td>변함</td><td>보존</td></tr>
+    <tr><td>회전 대칭(중심력): $V = \tfrac12 r^2 + 0.1\,r^4$ ($r^2 = x^2 + y^2$)</td><td>변함</td><td>보존</td><td>보존</td></tr>
+    <tr><td>대칭 깨기: 위 퍼텐셜에 $+\tfrac12\kappa x^2$ 추가</td><td>변함</td><td>변함</td><td>보존</td></tr>
+  </table>
+  <p>에너지는 $V$가 시간에 따라 변하지 않는 한 항상 보존돼요(시간 이동 대칭). 중심력에서 $p_x$는 보존되지 않는다는 점도 눈여겨보세요. 힘의 중심이 있어서 공간 이동 대칭이 없기 때문이에요.</p>
+  <div class="viz">
+    <canvas id="cN" width="800" height="440" role="img" aria-label="퍼텐셜 안에서 움직이는 입자의 궤적"></canvas>
+    <div class="legend"><span><b style="border-color:var(--user)"></b>입자의 궤적</span><span>배경: 퍼텐셜 $V$ (붉을수록 높아요)</span></div>
+    <div class="plotctl">
+      <label for="potSel">퍼텐셜:</label>
+      <select id="potSel"><option value="x">x-이동 대칭 (V = ½y² + 0.1y⁴)</option><option value="c">회전 대칭 (V = ½r² + 0.1r⁴)</option></select>
+      <label><input type="checkbox" id="brk"> 대칭 깨기 (+½κx²)</label>
+    </div>
+    <div class="sl"><label for="kap"><span>깨짐의 세기 $\kappa$</span> <span class="val" id="kapv">0.50</span></label><input type="range" id="kap" min="0" max="1.5" step="0.05" value="0.5"></div>
+    <div class="sl"><label for="v0"><span>처음 속력 $v_0$</span> <span class="val" id="v0v">1.20</span></label><input type="range" id="v0" min="0.2" max="2.5" step="0.05" value="1.2"></div>
+    <div class="sl"><label for="ang"><span>처음 속도 방향</span> <span class="val" id="angv">40°</span></label><input type="range" id="ang" min="0" max="360" step="5" value="40"></div>
+    <div class="btns"><button class="primary" id="nStart" type="button">▶ 시작</button><button id="nPause" type="button">⏸ 일시정지</button><button id="nReset" type="button">↺ 처음으로</button></div>
+    <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+      <div><div class="lab" style="font-size:.9rem">운동량 $p_x$ <span class="badge" id="b1">—</span></div><canvas id="cQ1" width="400" height="220" role="img" aria-label="p_x의 시간 변화"></canvas></div>
+      <div><div class="lab" style="font-size:.9rem">각운동량 $L_z$ <span class="badge" id="b2">—</span></div><canvas id="cQ2" width="400" height="220" role="img" aria-label="L_z의 시간 변화"></canvas></div>
+      <div><div class="lab" style="font-size:.9rem">에너지 $E$ <span class="badge" id="b3">—</span></div><canvas id="cQ3" width="400" height="220" role="img" aria-label="E의 시간 변화"></canvas></div>
+    </div>
+    <div class="legend"><span>가로: 시간 0~30 s, 세로: 값(처음 값 근처 확대, 회색 띠 = 규모의 ±5%)</span></div>
+    <p class="verdict" id="verdictN"></p>
+  </div>
+  <div class="note"><b>수치에 대해:</b> 속도 베를레(velocity Verlet) 방법으로 $\Delta t = 0.004$초씩 풀었어요. 이 방법은 에너지를 잘 보존해서, 대칭일 때 그래프가 평평하게 보여요(남는 오차는 $10^{-6}$ 이하 수준). “변함/보존” 판정은 그래프의 변동폭이 그 양의 규모(예: $|p|$, $|r||p|$, $|T| + |V|$ 의 최댓값)의 2% 미만이면 보존으로 표시해요.</div>
+</section>
+
+<section id="demoB">
+  <h2><span class="num">4</span>직접 해 보기 ②: 시간 이동 대칭이 깨지면 에너지가 변한다</h2>
+  <p>용수철에 매달린 질량 $m = 1$의 입자예요. 라그랑지안은 $L = \tfrac12\dot x^2 - \tfrac12 k(t)\,x^2$이에요. 용수철 상수가 일정하면 $L$에 $t$가 직접 없어서 에너지가 보존돼요. 하지만 $k(t) = k_0\bigl(1 + a\sin\Omega t\bigr)$처럼 시간에 따라 변하면 위의 식 $\dfrac{dE}{dt} = -\dfrac{\partial L}{\partial t}$가 보여 주듯</p>
+  <div class="eq">$$\frac{dE}{dt} = -\frac{\partial L}{\partial t} = \tfrac12\,\dot k(t)\,x^2, \qquad E = \tfrac12\dot x^2 + \tfrac12 k(t)\,x^2$$</div>
+  <p>만큼 에너지가 변해요(여기서 $k_0 = 4$). 아래 그래프에서 실선은 시뮬레이션으로 구한 $E$, 점선은 공식으로 $E_0 + \int_0^t \tfrac12\dot k\,x^2\,dt'$를 계산한 값이에요. 두 선이 겹쳐요.</p>
+  <div class="viz">
+    <div class="cols" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div><canvas id="cK1" width="500" height="260" role="img" aria-label="위치 x의 시간 변화"></canvas><div class="legend"><span>$x(t)$</span></div></div>
+      <div><canvas id="cK2" width="500" height="260" role="img" aria-label="에너지의 시간 변화"></canvas><div class="legend"><span><b style="border-color:var(--user)"></b>$E(t)$ (수치)</span><span><b style="border-color:var(--true);border-top-style:dashed"></b>$E_0 + \int \tfrac12\dot k x^2 dt$ (공식)</span></div></div>
+    </div>
+    <div class="plotctl"><label><input type="checkbox" id="tdep"> 용수철 상수를 시간에 따라 바꾸기 (시간 이동 대칭 깨기)</label></div>
+    <div class="sl"><label for="aK"><span>변동 크기 $a$</span> <span class="val" id="aKv">0.30</span></label><input type="range" id="aK" min="0.05" max="0.8" step="0.05" value="0.3"></div>
+    <div class="sl"><label for="OmK"><span>변동 진동수 $\Omega$ (rad/s)</span> <span class="val" id="OmKv">4.0</span></label><input type="range" id="OmK" min="1" max="8" step="0.1" value="4"></div>
+    <div class="btns"><button class="primary" id="kStart" type="button">▶ 시작</button><button id="kPause" type="button">⏸ 일시정지</button><button id="kReset" type="button">↺ 처음으로</button></div>
+    <div class="readout" aria-live="polite">
+      <div><div class="lab">에너지 $E(t)$</div><div class="num" id="kE">—</div></div>
+      <div><div class="lab">$E - E_0$</div><div class="num" id="kdE">—</div></div>
+      <div><div class="lab">공식 $\int \tfrac12\dot k x^2\,dt$</div><div class="num" id="kI">—</div></div>
+      <div><div class="lab">차이 (수치 − 공식)</div><div class="num" id="kR" style="font-size:1.05rem">—</div></div>
+    </div>
+    <p class="verdict" id="verdictK"></p>
+  </div>
+  <ul>
+    <li>체크를 끄면 $a = 0$처럼 되어 $E$가 평평해요(시간 이동 대칭).</li>
+    <li>체크를 켜고 $\Omega \approx 2\omega_0 = 4$로 맞추면 용수철이 “그네를 밀듯” 에너지를 계속 넣어서 $E$가 크게 늘어요(<b>매개변수 공명</b>).</li>
+  </ul>
+  <div class="note"><b>단순화:</b> 4차 룽게–쿠타(RK4) 방법으로 $\Delta t = 0.002$초씩 풀었어요. 공식 값은 같은 시뮬레이션에서 $\int \tfrac12\dot k x^2\,dt$를 함께 적분해서 얻었고, 두 값의 차이는 수치 오차예요.</div>
+</section>
+
+<section id="further">
+  <h2><span class="num">5</span>더 읽어 볼 거리</h2>
+  <ul>
+    <li><b>장(場)이론의 뇌터 전류</b>: 시공간에서 정의된 장 $\phi(x^\mu)$의 작용이 연속 대칭을 가지면 <b>보존 전류</b> $j^\mu$가 생기고 $\partial_\mu j^\mu = 0$ (연속방정식)이 성립해요. 전하 보존은 전자기장 위상 변환(게이지) 대칭에서 나와요.</li>
+    <li>이 페이지는 입자 하나, 연속 대칭 하나만 다뤘어요. 시간·공간 변환을 동시에 다루는 일반적인 형태, “준대칭”, 대칭이 시간에 따라 달라지는 게이지 대칭(뇌터의 제2정리)은 다루지 않았어요.</li>
+    <li>구속이 있을 때의 보존은 <a class="link" href="constraints-lagrange.html">③ 구속조건과 라그랑주 승수</a>에서, 모든 경로를 더하는 양자 버전은 <a class="link" href="path-integral.html">⑤ 경로적분</a>에서 이어서 볼 수 있어요.</li>
+  </ul>
+  <div class="linkcards">
+    <a href="variational-calculus.html"><b>② 변분법 →</b>오일러–라그랑주 방정식의 유도.</a>
+    <a href="path-integral.html"><b>⑤ 경로적분 →</b>양자역학에서는 모든 경로를 더해요.</a>
+  </div>
+</section>
+
+<section id="glossary">
+  <h2><span class="num">6</span>용어 정리</h2>
+  <dl>
+    <dt>대칭</dt><dd>어떤 변환을 해도 작용(운동법칙)이 변하지 않는 성질.</dd>
+    <dt>연속 대칭</dt><dd>작은 양 $\epsilon$으로 조금씩 연속적으로 줄 수 있는 변환(이동, 회전 등)의 대칭.</dd>
+    <dt>보존량</dt><dd>운동하는 동안 값이 변하지 않는 양. 뇌터 전하라고도 해요.</dd>
+    <dt>운동량 $p$</dt><dd>$m\dot x$. 공간 이동 대칭의 보존량.</dd>
+    <dt>각운동량 $L_z$</dt><dd>$x p_y - y p_x$. 회전 대칭의 보존량.</dd>
+    <dt>에너지 $E$</dt><dd>$\dot q\,\partial L/\partial\dot q - L$. 시간 이동 대칭의 보존량.</dd>
+    <dt>중심력</dt><dd>한 점(중심)을 향하거나 멀어지는 방향으로만 작용하고, 크기가 거리에만 의존하는 힘.</dd>
+    <dt>대칭 깨짐</dt><dd>대칭을 없애는 항을 더하는 것. 대응하는 보존량이 변하기 시작해요.</dd>
+    <dt>매개변수 공명</dt><dd>계의 매개변수(용수철 상수 등)를 주기적으로 바꿔서 진동이 커지는 현상.</dd>
+    <dt>뇌터 전류</dt><dd>장이론에서 연속 대칭이 만드는 보존 전류 $j^\mu$.</dd>
+  </dl>
+</section>
+
+<footer>이 페이지는 인터넷 연결 없이 동작해요(수식은 함께 배포된 katex 폴더로 그려요). · 사용 값: $m = 1$, 데모 ②: $k_0 = 4$</footer>
+
+</main>
+<script>
+(function(){function r(){if(typeof renderMathInElement!=='function')return;try{renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+window.renderAllMath=r;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',r);else r();})();
+</script>
+<script>
+//CORE-START
+// ---------- demo A: 2D particle (m = 1) ----------
+function accelA(mode, kappa, x, y){
+  let ax, ay;
+  if (mode === 'x'){ ax = 0; ay = -(y + 0.4 * y * y * y); }
+  else { const r2 = x * x + y * y, k = 1 + 0.4 * r2; ax = -x * k; ay = -y * k; }
+  return [ax - kappa * x, ay];
+}
+function potA(mode, kappa, x, y){
+  const V = (mode === 'x') ? 0.5 * y * y + 0.1 * y * y * y * y : (() => { const r2 = x * x + y * y; return 0.5 * r2 + 0.1 * r2 * r2; })();
+  return V + 0.5 * kappa * x * x;
+}
+function verletA(s, dt, mode, kappa){
+  let x = s[0], y = s[1], vx = s[2], vy = s[3], a = accelA(mode, kappa, x, y);
+  vx += 0.5 * dt * a[0]; vy += 0.5 * dt * a[1]; x += dt * vx; y += dt * vy;
+  a = accelA(mode, kappa, x, y); vx += 0.5 * dt * a[0]; vy += 0.5 * dt * a[1];
+  return [x, y, vx, vy];
+}
+function quantA(s, mode, kappa){
+  return { px: s[2], Lz: s[0] * s[3] - s[1] * s[2], E: 0.5 * (s[2] * s[2] + s[3] * s[3]) + potA(mode, kappa, s[0], s[1]),
+           mag: { px: Math.hypot(s[2], s[3]), Lz: Math.hypot(s[0], s[1]) * Math.hypot(s[2], s[3]),
+                  E: 0.5 * (s[2] * s[2] + s[3] * s[3]) + Math.abs(potA(mode, kappa, s[0], s[1])) } };
+}
+function initA(v0, angDeg){ const a = angDeg * Math.PI / 180; return [1.0, 0.6, v0 * Math.cos(a), v0 * Math.sin(a)]; }
+function runA(mode, kappa, v0, angDeg, T, dt){
+  let s = initA(v0, angDeg); const q0 = quantA(s, mode, kappa), mn = { px: q0.px, Lz: q0.Lz, E: q0.E }, mx = { px: q0.px, Lz: q0.Lz, E: q0.E }, sc = { px: q0.mag.px, Lz: q0.mag.Lz, E: q0.mag.E };
+  const n = Math.round(T / dt);
+  for (let i = 0; i < n; i++){
+    s = verletA(s, dt, mode, kappa); const q = quantA(s, mode, kappa);
+    for (const k of ['px', 'Lz', 'E']){ mn[k] = Math.min(mn[k], q[k]); mx[k] = Math.max(mx[k], q[k]); sc[k] = Math.max(sc[k], q.mag[k]); }
+  }
+  const rel = {}; for (const k of ['px', 'Lz', 'E']) rel[k] = (mx[k] - mn[k]) / sc[k];
+  return { rel: rel, abs: { px: mx.px - mn.px, Lz: mx.Lz - mn.Lz, E: mx.E - mn.E }, s: s };
+}
+// ---------- demo B: spring with k(t) = k0 (1 + a sin(Om t)) ----------
+const K0 = 4;
+function kOf(t, a, Om){ return K0 * (1 + a * Math.sin(Om * t)); }
+function kdotOf(t, a, Om){ return K0 * a * Om * Math.cos(Om * t); }
+// state [x, v, I], I = ∫ (1/2) kdot x^2 dt
+function springRHS(t, s, a, Om){ return [s[1], -kOf(t, a, Om) * s[0], 0.5 * kdotOf(t, a, Om) * s[0] * s[0]]; }
+function springStep(t, s, dt, a, Om){
+  const f = (tt, ss) => springRHS(tt, ss, a, Om), k1 = f(t, s), k2 = f(t + dt / 2, s.map((v, i) => v + dt / 2 * k1[i])),
+        k3 = f(t + dt / 2, s.map((v, i) => v + dt / 2 * k2[i])), k4 = f(t + dt, s.map((v, i) => v + dt * k3[i]));
+  return s.map((v, i) => v + dt / 6 * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]));
+}
+function springE(t, s, a, Om){ return 0.5 * s[1] * s[1] + 0.5 * kOf(t, a, Om) * s[0] * s[0]; }
+//CORE-END
+
+(function(){
+  if (typeof document === 'undefined') return;
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const FONT = '"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",sans-serif';
+  const font = px => px + 'px ' + FONT;
+  function setup(c, ratio, minH){
+    const dpr = window.devicePixelRatio || 1, w = c.clientWidth || 800, h = Math.max(Math.round(w * ratio), minH);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px';
+    const ctx = c.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return { ctx: ctx, w: w, h: h };
+  }
+  const sgn = (v, d) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(d);
+
+  /* ===== demo A ===== */
+  const DT = 0.004, TMAX = 30, SPEED = 2;
+  let sA, tA = 0, histA = [], runA_ = false, nextA = 0, trail = [], sc0 = { px: 1e-9, Lz: 1e-9, E: 1e-9 }, q0 = null;
+  function aParams(){ return { mode: $('potSel').value, kappa: $('brk').checked ? parseFloat($('kap').value) : 0, v0: parseFloat($('v0').value), ang: parseFloat($('ang').value) }; }
+  function resetA(){
+    const P = aParams(); $('kapv').textContent = parseFloat($('kap').value).toFixed(2); $('v0v').textContent = P.v0.toFixed(2); $('angv').textContent = P.ang + '°';
+    $('kap').disabled = !$('brk').checked;
+    sA = initA(P.v0, P.ang); tA = 0; histA = []; trail = [[sA[0], sA[1]]]; runA_ = false; nextA = 0;
+    q0 = quantA(sA, P.mode, P.kappa); sc0 = { px: q0.mag.px, Lz: q0.mag.Lz, E: q0.mag.E }; sampleA(); $('nStart').textContent = '▶ 시작'; drawA();
+  }
+  function sampleA(){
+    const P = aParams(), q = quantA(sA, P.mode, P.kappa);
+    for (const k of ['px', 'Lz', 'E']) sc0[k] = Math.max(sc0[k], q.mag[k]);
+    histA.push({ t: tA, px: q.px, Lz: q.Lz, E: q.E });
+  }
+  function drawA(){
+    const P = aParams(), {ctx, w, h} = setup($('cN'), 0.5, 280);
+    const half = 3.6, vh = half * h / w, follow = (P.mode === 'x' && P.kappa === 0), cx = follow ? sA[0] : 0, cy = 0;
+    const X = x => (x - cx + half) / (2 * half) * w, Y = y => (cy + vh - y) / (2 * vh) * h;
+    ctx.clearRect(0, 0, w, h);
+    const gx = 80, gy = Math.round(80 * h / w); let vmax = 0; const vals = [];
+    for (let j = 0; j < gy; j++) for (let i = 0; i < gx; i++){
+      const x = cx - half + 2 * half * (i + 0.5) / gx, y = cy + vh - 2 * vh * (j + 0.5) / gy, v = potA(P.mode, P.kappa, x, y); vals.push(v); vmax = Math.max(vmax, v);
+    }
+    const cw = w / gx, ch = h / gy;
+    vals.forEach((v, idx) => { const i = idx % gx, j = Math.floor(idx / gx), t = Math.min(1, v / 12); ctx.fillStyle = 'rgba(' + Math.round(60 + 195 * t) + ',' + Math.round(120 - 60 * t) + ',' + Math.round(255 - 205 * t) + ',0.2)'; ctx.fillRect(i * cw, j * ch, cw + 0.6, ch + 0.6); });
+    ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(X(0), 0); ctx.lineTo(X(0), h); ctx.moveTo(0, Y(0)); ctx.lineTo(w, Y(0)); ctx.stroke();
+    ctx.strokeStyle = css('--user'); ctx.lineWidth = 2; ctx.beginPath(); trail.forEach((p, i) => { i ? ctx.lineTo(X(p[0]), Y(p[1])) : ctx.moveTo(X(p[0]), Y(p[1])); }); ctx.stroke();
+    ctx.fillStyle = css('--user'); ctx.strokeStyle = css('--card'); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(X(sA[0]), Y(sA[1]), 8, 0, 7); ctx.fill(); ctx.stroke();
+    ctx.font = font(12); ctx.fillStyle = css('--muted'); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText('t = ' + tA.toFixed(1) + ' s' + (follow ? '   (카메라가 입자를 따라가요)' : ''), 10, 8);
+    drawQ('cQ1', 'px', 'b1'); drawQ('cQ2', 'Lz', 'b2'); drawQ('cQ3', 'E', 'b3');
+    const bs = ['px', 'Lz', 'E'].map(k => relDev(k)), names = ['p_x', 'L_z', 'E'];
+    const cons = bs.map(v => v < 0.02);
+    $('verdictN').textContent = (running() ? '' : '') + '지금까지: ' + names.map((n, i) => n + (cons[i] ? ' 보존' : ' 변함')).join(', ') + '.';
+  }
+  function running(){ return runA_; }
+  function relDev(k){ if (histA.length < 2) return 0; let mn = 1e30, mx = -1e30; histA.forEach(p => { mn = Math.min(mn, p[k]); mx = Math.max(mx, p[k]); }); return (mx - mn) / sc0[k]; }
+  function drawQ(id, key, bid){
+    const {ctx, w, h} = setup($(id), 0.55, 150), Lm = 44, R = 8, Tp = 8, B = 22;
+    const base = histA[0][key], dev = relDev(key), span = Math.max(1.2 * dev, 0.05) * sc0[key];
+    let lo = base - span, hi = base + span; if (dev > 0.05){ let mn = 1e30, mx = -1e30; histA.forEach(p => { mn = Math.min(mn, p[key]); mx = Math.max(mx, p[key]); }); const pd = (mx - mn) * 0.1; lo = mn - pd; hi = mx + pd; }
+    const X = t => Lm + t / TMAX * (w - Lm - R), Y = v => Tp + (hi - v) / (hi - lo) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(11); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let k = 0; k <= 2; k++){ const v = lo + (hi - lo) * k / 2; ctx.beginPath(); ctx.moveTo(Lm, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v.toFixed(2), Lm - 4, Y(v)); }
+    ctx.fillStyle = 'rgba(128,128,128,0.15)'; ctx.fillRect(Lm, Y(base + 0.05 * sc0[key]), w - Lm - R, Y(base - 0.05 * sc0[key]) - Y(base + 0.05 * sc0[key]));
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillStyle = css('--muted'); for (let t = 0; t <= TMAX; t += 10) ctx.fillText(String(t), X(t), h - B + 4);
+    ctx.strokeStyle = dev < 0.02 ? css('--true') : css('--user'); ctx.lineWidth = 2.5; ctx.beginPath(); histA.forEach((p, i) => { i ? ctx.lineTo(X(p.t), Y(p[key])) : ctx.moveTo(X(p.t), Y(p[key])); }); ctx.stroke();
+    const b = $(bid); b.textContent = dev < 0.02 ? '보존 ✓' : '변함 ✗ (' + (dev * 100).toFixed(0) + '%)'; b.className = 'badge ' + (dev < 0.02 ? 'ok' : 'no');
+  }
+  function frameA(){
+    if (!runA_) return; const P = aParams(), n = Math.round(SPEED / 60 / DT);
+    for (let i = 0; i < n; i++){ sA = verletA(sA, DT, P.mode, P.kappa); tA += DT; if (tA >= nextA){ sampleA(); trail.push([sA[0], sA[1]]); nextA = tA + 0.05; } }
+    if (trail.length > 1500) trail.shift();
+    if (tA >= TMAX){ runA_ = false; $('nStart').textContent = '▶ 다시'; }
+    drawA(); if (runA_) requestAnimationFrame(frameA);
+  }
+  $('nStart').addEventListener('click', () => { if (tA >= TMAX) resetA(); if (runA_) return; runA_ = true; $('nStart').textContent = '진행 중…'; requestAnimationFrame(frameA); });
+  $('nPause').addEventListener('click', () => { runA_ = false; $('nStart').textContent = '▶ 계속'; });
+  $('nReset').addEventListener('click', resetA);
+  ['potSel', 'brk'].forEach(id => $(id).addEventListener('change', resetA)); ['kap', 'v0', 'ang'].forEach(id => $(id).addEventListener('input', resetA));
+
+  /* ===== demo B ===== */
+  const DTK = 0.002, TK = 20, SPK = 2;
+  let sK, tK = 0, hK = [], runK = false, nextK = 0;
+  function kParams(){ const on = $('tdep').checked; return { a: on ? parseFloat($('aK').value) : 0, Om: parseFloat($('OmK').value), on: on }; }
+  function resetK(){
+    const P = kParams(); $('aKv').textContent = parseFloat($('aK').value).toFixed(2); $('OmKv').textContent = P.Om.toFixed(1);
+    $('aK').disabled = !P.on; $('OmK').disabled = !P.on;
+    sK = [1, 0, 0]; tK = 0; hK = []; runK = false; nextK = 0; sampleK(); $('kStart').textContent = '▶ 시작'; drawK();
+  }
+  function sampleK(){ const P = kParams(); hK.push({ t: tK, x: sK[0], E: springE(tK, sK, P.a, P.Om), I: sK[2] }); }
+  function drawK(){
+    const P = kParams(), E0 = hK[0].E, last = hK[hK.length - 1], dE = last.E - E0;
+    $('kE').textContent = last.E.toFixed(4); $('kdE').textContent = (dE < 0 ? '−' : '+') + Math.abs(dE).toFixed(4); $('kI').textContent = (last.I < 0 ? '−' : '+') + Math.abs(last.I).toFixed(4);
+    const res = dE - last.I; $('kR').textContent = (res < 0 ? '−' : '+') + Math.abs(res).toExponential(1);
+    $('verdictK').textContent = !P.on ? 'k가 일정해요 → L에 t가 직접 없어서 에너지가 보존돼요(변화 ≈ ' + Math.abs(dE).toExponential(1) + ').' :
+      'k(t)가 변해요 → 시간 이동 대칭이 깨져서 에너지가 변해요. 변화량은 공식 ∫½k̇x²dt와 같아요(차이 ' + Math.abs(res).toExponential(1) + ').';
+    plotSeries('cK1', [{ key: 'x', color: css('--accent'), lw: 2.5 }], 'x', false);
+    plotSeries('cK2', [{ key: 'Ef', color: css('--true'), lw: 3.5, dash: [7, 5] }, { key: 'E', color: css('--user'), lw: 2 }], 'E', true);
+  }
+  function plotSeries(id, series, name, isE){
+    const {ctx, w, h} = setup($(id), 0.52, 200), Lm = 52, R = 10, Tp = 10, B = 28, E0 = hK[0].E;
+    let lo = 1e30, hi = -1e30; hK.forEach(p => { const vs = isE ? [p.E, E0 + p.I] : [p.x]; vs.forEach(v => { lo = Math.min(lo, v); hi = Math.max(hi, v); }); });
+    if (isE){ lo = Math.min(lo, E0); hi = Math.max(hi, E0); } const span = Math.max(hi - lo, isE ? 0.2 * Math.abs(E0) : 0.5); const mid = (hi + lo) / 2; lo = mid - span * 0.6; hi = mid + span * 0.6;
+    const X = t => Lm + t / TK * (w - Lm - R), Y = v => Tp + (hi - v) / (hi - lo) * (h - Tp - B);
+    ctx.clearRect(0, 0, w, h); ctx.font = font(11); ctx.fillStyle = css('--muted'); ctx.strokeStyle = css('--line'); ctx.lineWidth = 1; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (let k = 0; k <= 4; k++){ const v = lo + (hi - lo) * k / 4; ctx.beginPath(); ctx.moveTo(Lm, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); ctx.fillText(v.toFixed(2), Lm - 5, Y(v)); }
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; for (let t = 0; t <= TK; t += 5) ctx.fillText(String(t), X(t), h - B + 5); ctx.fillText('시간 (s)', (Lm + w - R) / 2, h - 13);
+    series.forEach(s => { ctx.strokeStyle = s.color; ctx.lineWidth = s.lw; ctx.setLineDash(s.dash || []); ctx.beginPath();
+      hK.forEach((p, i) => { const v = s.key === 'Ef' ? E0 + p.I : p[s.key]; i ? ctx.lineTo(X(p.t), Y(v)) : ctx.moveTo(X(p.t), Y(v)); }); ctx.stroke(); ctx.setLineDash([]); });
+    if (isE){ ctx.setLineDash([3, 4]); ctx.strokeStyle = css('--muted'); ctx.beginPath(); ctx.moveTo(Lm, Y(E0)); ctx.lineTo(w - R, Y(E0)); ctx.stroke(); ctx.setLineDash([]); }
+  }
+  function frameK(){
+    if (!runK) return; const P = kParams(), n = Math.round(SPK / 60 / DTK);
+    for (let i = 0; i < n; i++){ sK = springStep(tK, sK, DTK, P.a, P.Om); tK += DTK; if (tK >= nextK){ sampleK(); nextK = tK + 0.02; } }
+    if (tK >= TK){ runK = false; $('kStart').textContent = '▶ 다시'; }
+    drawK(); if (runK) requestAnimationFrame(frameK);
+  }
+  $('kStart').addEventListener('click', () => { if (tK >= TK) resetK(); if (runK) return; runK = true; $('kStart').textContent = '진행 중…'; requestAnimationFrame(frameK); });
+  $('kPause').addEventListener('click', () => { runK = false; $('kStart').textContent = '▶ 계속'; });
+  $('kReset').addEventListener('click', resetK);
+  $('tdep').addEventListener('change', resetK); ['aK', 'OmK'].forEach(id => $(id).addEventListener('input', resetK));
+
+  function all(){ drawA(); drawK(); }
+  window.addEventListener('resize', all);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', all);
+  resetA(); resetK();
+})();
+
+</script>
+</body>
+</html>

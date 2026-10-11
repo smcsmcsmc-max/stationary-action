@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>정상 작용 원리 쉽게 이해하기</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<script defer src="katex/katex.min.js"></script>
+<script defer src="katex/auto-render.min.js"></script>
 <style>
 :root{
   --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
@@ -82,6 +85,16 @@ a.link{color:var(--accent);font-weight:700}
 .linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
 .linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
 .linkcards a:hover{background:var(--code)}
+.katex{font-size:1.06em}
+.eq .katex{font-size:1.12em}
+.katex-display{margin:.2em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.eq .katex-display{margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:.8em 0;font-size:.97rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+.tbl th{background:var(--soft)}
+.badge{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--code)}
+.badge.ok{background:var(--true);color:#fff}.badge.no{background:var(--user);color:#fff}
+@media (prefers-color-scheme: dark){.badge.ok,.badge.no{color:#10141c}}
 footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 </style>
 </head>
@@ -90,7 +103,9 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <nav class="nav" aria-label="학습 시리즈">
   <a href="index.html" aria-current="page">① 정상 작용 원리</a>
   <a href="variational-calculus.html">② 변분법</a>
-  <a href="path-integral.html">③ 경로적분</a>
+  <a href="constraints-lagrange.html">③ 구속조건·라그랑주 승수</a>
+  <a href="noether.html">④ 뇌터 정리</a>
+  <a href="path-integral.html">⑤ 경로적분</a>
 </nav>
 <header>
   <h1>🎯 정상 작용 원리, 쉽게 이해하기</h1>
@@ -100,8 +115,8 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <div class="summary" id="summary">
   <h2>3줄 요약</h2>
   <ol>
-    <li>공을 던지면 포물선을 그리는데, 물리학은 이를 “가능한 모든 경로 중 <b>작용(S)</b>이 정상(보통 최소)인 경로가 실제 경로”라고도 설명할 수 있어요.</li>
-    <li>작용은 경로 하나에 숫자 하나를 주는 값으로, <b>S = ∫(운동에너지 − 위치에너지)dt</b> 예요.</li>
+    <li>공을 던지면 포물선을 그리는데, 물리학은 이를 “가능한 모든 경로 중 <b>작용($S$)</b>이 정상(보통 최소)인 경로가 실제 경로”라고도 설명할 수 있어요.</li>
+    <li>작용은 경로 하나에 숫자 하나를 주는 값으로, <b>$S = \int (T - V)\,dt$</b> (운동에너지 $T$ − 위치에너지 $V$를 시간에 따라 더한 값) 예요.</li>
     <li>이 원리 하나에서 뉴턴의 운동법칙, 라그랑주 역학, 양자역학의 경로적분, 장(場)이론까지 이어져요.</li>
   </ol>
 </div>
@@ -116,21 +131,21 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
   <h2><span class="num">2</span>말로 풀어 보는 핵심 아이디어</h2>
   <p>먼저 필요한 낱말 몇 개만 짚고 갈게요.</p>
   <ul>
-    <li><span class="term">운동에너지 T</span>: 움직이는 물체가 가진 에너지. 빠를수록 커져요. &nbsp;<i class="v">T = ½·m·v²</i> (m은 질량, v는 속도)</li>
-    <li><span class="term">위치에너지 V</span>: 높은 곳에 있어서 저장된 에너지. 중력 아래에서는 <i class="v">V = m·g·y</i> (g는 중력가속도 9.8, y는 높이)</li>
-    <li><span class="term">라그랑지안 L</span>: 둘의 <b>차이</b>예요. <i class="v">L = T − V</i>. 합(총에너지)이 아니라 차이라는 점이 포인트!</li>
+    <li><span class="term">운동에너지 $T$</span>: 움직이는 물체가 가진 에너지. 빠를수록 커져요. &nbsp;$T = \tfrac12 m v^2$ ($m$은 질량, $v$는 속도)</li>
+    <li><span class="term">위치에너지 $V$</span>: 높은 곳에 있어서 저장된 에너지. 중력 아래에서는 $V = m g y$ ($g$는 중력가속도 $9.8\ \mathrm{m/s^2}$, $y$는 높이)</li>
+    <li><span class="term">라그랑지안 $L$</span>: 둘의 <b>차이</b>예요. $L = T - V$. 합(총에너지)이 아니라 차이라는 점이 포인트!</li>
   </ul>
-  <p>한 경로를 따라 시간 순서대로 L을 쭉 더하면(적분하면) 숫자 하나가 나와요. 이걸 <span class="term">작용(action) S</span>라고 불러요.</p>
-  <div class="eq">S = ∫ L dt = ∫ ( T − V ) dt<small>시작 시각부터 끝 시각까지 (T − V)를 계속 더한 값 — 경로 하나당 숫자 하나</small></div>
+  <p>한 경로를 따라 시간 순서대로 $L$을 쭉 더하면(적분하면) 숫자 하나가 나와요. 이걸 <span class="term">작용(action) $S$</span>라고 불러요.</p>
+  <div class="eq">$$S = \int L\,dt = \int \left( T - V \right) dt$$<small>시작 시각부터 끝 시각까지 $(T - V)$를 계속 더한 값 — 경로 하나당 숫자 하나</small></div>
   <p>그러면 원리는 이렇게 말할 수 있어요.</p>
-  <div class="eq" style="white-space:normal">자연은 모든 경로를 “시험해 보고”, 작용 S가 <b>정상(stationary)</b>인 경로를 실제로 따른다.</div>
-  <p><b>정상</b>이 뭘까요? 경로를 아주 조금 바꿔 봐도 S가 (1차로는) 변하지 않는 상태예요. 언덕 꼭대기나 골짜기 바닥에서는 한 걸음 옮겨도 높이가 거의 안 변하죠? 그런 평평한 지점이 “정상”이에요. 대개는 골짜기 바닥, 즉 <b>최소</b>라서 “최소 작용의 원리”라고도 불러요. 하지만 꼭 최소일 필요는 없고(말안장 같은 점도 가능), 그래서 더 정확한 이름이 “정상 작용 원리”예요.</p>
-  <div class="note">※ “모든 경로를 시험한다”는 건 비유예요. 실제로는 S가 정상이 되는 조건을 풀면 뉴턴의 운동방정식과 똑같은 식이 나온다는 뜻이에요.</div>
+  <div class="eq" style="white-space:normal">자연은 모든 경로를 “시험해 보고”, 작용 $S$가 <b>정상(stationary)</b>인 경로를 실제로 따른다.</div>
+  <p><b>정상</b>이 뭘까요? 경로를 아주 조금 바꿔 봐도 $S$가 (1차로는) 변하지 않는 상태예요. 언덕 꼭대기나 골짜기 바닥에서는 한 걸음 옮겨도 높이가 거의 안 변하죠? 그런 평평한 지점이 “정상”이에요. 대개는 골짜기 바닥, 즉 <b>최소</b>라서 “최소 작용의 원리”라고도 불러요. 하지만 꼭 최소일 필요는 없고(말안장 같은 점도 가능), 그래서 더 정확한 이름이 “정상 작용 원리”예요.</p>
+  <div class="note">※ “모든 경로를 시험한다”는 건 비유예요. 실제로는 $S$가 정상이 되는 조건을 풀면 뉴턴의 운동방정식과 똑같은 식이 나온다는 뜻이에요.</div>
 </section>
 
 <section id="demo">
   <h2><span class="num">3</span>직접 해 보기: 경로를 흔들면 작용이 어떻게 변할까?</h2>
-  <p>점 A(시각 0초, 높이 0)에서 던진 공이 점 B(<b>2초</b> 뒤, 높이 0)에 도착해요. 중력가속도 g = 9.8, 질량 m = 1로 두었어요. <span style="color:var(--true);font-weight:700">초록 점선</span>이 진짜 포물선이에요. 아래 슬라이더로 진짜 경로에 사인(sin) 물결을 더해서 <span style="color:var(--user);font-weight:700">빨간 경로</span>를 만들어 보세요. 출발점과 도착점은 항상 고정돼요.</p>
+  <p>점 A(시각 0초, 높이 0)에서 던진 공이 점 B(<b>2초</b> 뒤, 높이 0)에 도착해요. 중력가속도 $g = 9.8$, 질량 $m = 1$로 두었어요. <span style="color:var(--true);font-weight:700">초록 점선</span>이 진짜 포물선이에요. 아래 슬라이더로 진짜 경로에 사인(sin) 물결을 더해서 <span style="color:var(--user);font-weight:700">빨간 경로</span>를 만들어 보세요. 출발점과 도착점은 항상 고정돼요.</p>
 
   <div class="viz">
     <div>
@@ -150,13 +165,13 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
     </div>
 
     <div class="readout" aria-live="polite">
-      <div><div class="lab">내 경로의 작용 S</div><div class="num" id="Sval">—</div></div>
-      <div><div class="lab">진짜 경로의 작용 S₀</div><div class="num" id="S0val">—</div></div>
-      <div><div class="lab">차이 ΔS = S − S₀</div><div class="num" id="dSval">—</div></div>
-      <div><div class="lab">∫T dt (운동) / ∫V dt (위치)</div><div class="num" id="TUval" style="font-size:1rem">—</div></div>
+      <div><div class="lab">내 경로의 작용 $S$</div><div class="num" id="Sval">—</div></div>
+      <div><div class="lab">진짜 경로의 작용 $S_0$</div><div class="num" id="S0val">—</div></div>
+      <div><div class="lab">차이 $\Delta S = S - S_0$</div><div class="num" id="dSval">—</div></div>
+      <div><div class="lab">$\int T\,dt$ (운동) / $\int V\,dt$ (위치)</div><div class="num" id="TUval" style="font-size:1rem">—</div></div>
     </div>
     <div>
-      <div class="lab" style="font-size:.85rem;color:var(--muted)">ΔS 막대 (오른쪽으로 길수록 진짜 경로보다 작용이 커요)</div>
+      <div class="lab" style="font-size:.85rem;color:var(--muted)">$\Delta S$ 막대 (오른쪽으로 길수록 진짜 경로보다 작용이 커요)</div>
       <div class="bar"><i id="dSbar"></i></div>
       <div class="verdict" id="verdict"></div>
     </div>
@@ -167,53 +182,58 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
         <select id="axisSel"><option value="0">물결 1의 크기</option><option value="1">물결 2의 크기</option><option value="2">물결 3의 크기</option></select>
       </div>
       <canvas id="plotCanvas" width="800" height="320" role="img" aria-label="물결 크기에 따른 작용 S 그래프"></canvas>
-      <div class="legend"><span><b style="border-color:var(--accent)"></b>S의 변화(나머지 슬라이더는 현재 값 유지)</span><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로의 S₀</span><span>● 현재 위치</span></div>
+      <div class="legend"><span><b style="border-color:var(--accent)"></b>$S$의 변화(나머지 슬라이더는 현재 값 유지)</span><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로의 $S_0$</span><span>● 현재 위치</span></div>
     </div>
   </div>
 
   <h2 style="margin-top:1.2em;font-size:1.1rem">관찰 포인트</h2>
   <ul>
-    <li>슬라이더를 어느 쪽으로 움직이든 S는 <b>커지기만</b> 해요. 0일 때 S가 가장 작아요. 아래 그래프가 U자(포물선) 모양인 이유예요.</li>
-    <li>0 근처에서는 그래프가 거의 평평해요. 그게 바로 “<b>정상</b>” — 경로를 살짝 바꿔도 S가 1차로는 변하지 않아요. (실제로는 크기의 <b>제곱</b>에 비례해서만 늘어요.)</li>
-    <li>잔물결(물결 3)은 같은 크기여도 S를 훨씬 많이 키워요. 속도가 크게 요동치면 운동에너지 T가 많이 늘기 때문이에요.</li>
+    <li>슬라이더를 어느 쪽으로 움직이든 $S$는 <b>커지기만</b> 해요. 0일 때 $S$가 가장 작아요. 아래 그래프가 U자(포물선) 모양인 이유예요.</li>
+    <li>0 근처에서는 그래프가 거의 평평해요. 그게 바로 “<b>정상</b>” — 경로를 살짝 바꿔도 $S$가 1차로는 변하지 않아요. (실제로는 크기의 <b>제곱</b>에 비례해서만 늘어요.)</li>
+    <li>잔물결(물결 3)은 같은 크기여도 $S$를 훨씬 많이 키워요. 속도가 크게 요동치면 운동에너지 $T$가 많이 늘기 때문이에요.</li>
   </ul>
-  <div class="note"><b>수학 확인:</b> 진짜 경로에 y = Σ aₙ·sin(nπt/T)를 더하면 S = S₀ + Σ n²π²·m·aₙ² / (4T) 가 돼요(T는 총 시간 2초). 모든 항이 0 이상이라 S ≥ S₀이고, 모든 aₙ = 0일 때만 같아요. 위의 S는 이 공식이 아니라 경로를 2000조각으로 잘라 <b>수치 적분</b>으로 계산한 값이고, 아래 “ΔS 공식과의 차이”로 두 값이 일치하는지 확인할 수 있어요: <b id="chk">—</b></div>
-  <div class="note">참고: 이 예에서는 S가 진짜 최소지만, 경로가 아주 길거나(예: 용수철처럼 되돌아오는 운동에서 긴 시간) 하면 최소가 아니라 <b>말안장</b> 같은 정상점이 될 수도 있어요. 그래서 “최소”가 아니라 “정상”이라고 불러요.</div>
+  <div class="note"><b>수학 확인:</b> 진짜 경로에 $\sum_n a_n \sin(n\pi t/T)$를 더하면 <div class="eq">$$S = S_0 + \sum_n \frac{n^2\pi^2\, m\, a_n^2}{4T}$$</div> 가 돼요($T$는 총 시간 $2$초). 모든 항이 $0$ 이상이라 $S \ge S_0$이고, 모든 $a_n = 0$일 때만 같아요. 위의 $S$는 이 공식이 아니라 경로를 2000조각으로 잘라 <b>수치 적분</b>으로 계산한 값이고, “수치 적분 $\Delta S$와 공식 값의 차이”로 두 값이 일치하는지 확인할 수 있어요: <b id="chk">—</b></div>
+  <div class="note">참고: 이 예에서는 $S$가 진짜 최소지만, 경로가 아주 길거나(예: 용수철처럼 되돌아오는 운동에서 긴 시간) 하면 최소가 아니라 <b>말안장</b> 같은 정상점이 될 수도 있어요. 그래서 “최소”가 아니라 “정상”이라고 불러요.</div>
 </section>
 
 <section id="why">
   <h2><span class="num">4</span>그래서 이게 왜 중요할까?</h2>
   <ul>
-    <li><b>뉴턴 법칙이 따라 나와요.</b> “S가 정상이다”라는 조건을 수학(변분법)으로 풀면 <i class="v">F = m·a</i> 와 같은 운동방정식(오일러–라그랑주 방정식)이 나와요.</li>
-    <li><b>라그랑주 역학.</b> 힘을 일일이 따지는 대신 에너지(T − V)만 적으면 되고, 좌표를 편하게 골라 복잡한 계(진자, 로봇 팔, 행성 운동)를 풀기 쉬워요.</li>
-    <li><b>양자역학의 경로적분.</b> 파인만은 입자가 가능한 <b>모든</b> 경로를 동시에 “시도하고”, 각 경로가 <i class="v">e^(iS/ħ)</i> 라는 위상을 갖는다고 봤어요. 우리 크기의 물체에서는 정상 작용 근처의 경로들만 서로 강화되어 하나의 고전 경로로 보여요.</li>
+    <li><b>뉴턴 법칙이 따라 나와요.</b> “$S$가 정상이다”라는 조건을 수학(변분법)으로 풀면 $F = ma$ 와 같은 운동방정식(오일러–라그랑주 방정식)이 나와요.</li>
+    <li><b>라그랑주 역학.</b> 힘을 일일이 따지는 대신 에너지($T - V$)만 적으면 되고, 좌표를 편하게 골라 복잡한 계(진자, 로봇 팔, 행성 운동)를 풀기 쉬워요.</li>
+    <li><b>양자역학의 경로적분.</b> 파인만은 입자가 가능한 <b>모든</b> 경로를 동시에 “시도하고”, 각 경로가 $e^{iS/\hbar}$ 라는 위상을 갖는다고 봤어요. 우리 크기의 물체에서는 정상 작용 근처의 경로들만 서로 강화되어 하나의 고전 경로로 보여요.</li>
     <li><b>장(場)이론.</b> 전자기학, 일반상대성이론, 입자물리의 표준모형도 “장의 작용”을 정하고 그것이 정상이 되는 조건에서 출발해요.</li>
   </ul>
   <p>더 깊이 알고 싶다면 시리즈의 다음 페이지로 이어서 가 보세요.</p>
   <div class="linkcards">
-    <a href="variational-calculus.html"><b>② 변분법 →</b>오일러–라그랑주 방정식을 직접 유도하고, 최단경로·최단 시간 곡선(브라키스토크론)·F = ma를 풀어 봐요. 경사하강법으로 경로가 저절로 펴지는 모습도 볼 수 있어요.</a>
-    <a href="path-integral.html"><b>③ 경로적분 →</b>입자가 모든 경로를 “동시에” 지난다는 파인만의 생각을 위상 화살표와 이중 슬릿으로 체험해요.</a>
+    <a href="variational-calculus.html"><b>② 변분법 →</b>오일러–라그랑주 방정식을 직접 유도하고, 최단경로·최단 시간 곡선(브라키스토크론)·$F = ma$를 풀어 봐요. 경사하강법으로 경로가 저절로 펴지는 모습도 볼 수 있어요.</a>
+    <a href="constraints-lagrange.html"><b>③ 구속조건·라그랑주 승수 →</b>“이 길 위에서만 움직여야 한다”는 제약과 구속력(장력)을 다뤄요.</a>
+    <a href="noether.html"><b>④ 뇌터 정리 →</b>대칭이 에너지·운동량·각운동량 보존을 낳는 이유를 시뮬레이션으로 확인해요.</a>
+    <a href="path-integral.html"><b>⑤ 경로적분 →</b>입자가 모든 경로를 “동시에” 지난다는 파인만의 생각을 위상 화살표와 이중 슬릿으로 체험해요.</a>
   </div>
 </section>
 
 <section id="glossary">
   <h2><span class="num">5</span>용어 정리</h2>
   <dl>
-    <dt>경로</dt><dd>시간에 따라 물체가 어디에 있는지를 이은 길. 여기서는 y(t).</dd>
-    <dt>운동에너지 T</dt><dd>움직임에서 오는 에너지, ½·m·v².</dd>
-    <dt>위치에너지 V</dt><dd>위치(높이)에서 오는 에너지. 중력에서는 m·g·y.</dd>
-    <dt>라그랑지안 L</dt><dd>T − V. 매 순간의 “작용 조각”.</dd>
-    <dt>작용 S</dt><dd>경로를 따라 L을 시간으로 적분한 값. 단위는 에너지×시간(J·s).</dd>
-    <dt>정상(stationary)</dt><dd>경로를 조금 바꿔도 S가 1차로는 변하지 않는 상태. 최소·최대·말안장 모두 포함.</dd>
-    <dt>적분 ∫</dt><dd>아주 잘게 나눠 모두 더한다는 뜻의 기호.</dd>
-    <dt>변분법</dt><dd>“경로 전체”를 바꿔 가며 S가 정상이 되는 경로를 찾는 수학.</dd>
+    <dt>경로</dt><dd>시간에 따라 물체가 어디에 있는지를 이은 길. 여기서는 $y(t)$.</dd>
+    <dt>운동에너지 $T$</dt><dd>움직임에서 오는 에너지, $\tfrac12 m v^2$.</dd>
+    <dt>위치에너지 $V$</dt><dd>위치(높이)에서 오는 에너지. 중력에서는 $m g y$.</dd>
+    <dt>라그랑지안 $L$</dt><dd>$T - V$. 매 순간의 “작용 조각”.</dd>
+    <dt>작용 $S$</dt><dd>경로를 따라 $L$을 시간으로 적분한 값. 단위는 에너지×시간($\mathrm{J\cdot s}$).</dd>
+    <dt>정상(stationary)</dt><dd>경로를 조금 바꿔도 $S$가 1차로는 변하지 않는 상태. 최소·최대·말안장 모두 포함.</dd>
+    <dt>적분 $\int$</dt><dd>아주 잘게 나눠 모두 더한다는 뜻의 기호.</dd>
+    <dt>변분법</dt><dd>“경로 전체”를 바꿔 가며 $S$가 정상이 되는 경로를 찾는 수학.</dd>
     <dt>경로적분</dt><dd>가능한 모든 경로를 고려해 합하는 양자역학의 방법(파인만).</dd>
   </dl>
 </section>
 
-<footer>이 페이지는 인터넷 연결 없이 이 파일 하나로 동작해요. · 사용 값: m = 1, g = 9.8, T = 2초</footer>
+<footer>이 페이지는 인터넷 연결 없이 동작해요(수식은 함께 배포된 katex 폴더로 그려요). · 사용 값: $m = 1$, $g = 9.8$, $T = 2$초</footer>
 </main>
-
+<script>
+(function(){function r(){if(typeof renderMathInElement!=='function')return;try{renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+window.renderAllMath=r;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',r);else r();})();
+</script>
 <script>
 //CORE-START
 const G = 9.8, M = 1, TT = 2, NSTEP = 2000;

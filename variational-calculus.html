@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>변분법 쉽게 이해하기</title>
+<link rel="stylesheet" href="katex/katex.min.css">
+<script defer src="katex/katex.min.js"></script>
+<script defer src="katex/auto-render.min.js"></script>
 <style>
 :root{
   --bg:#f7f8fb; --card:#ffffff; --text:#1c2230; --muted:#5a6477; --line:#d9deea;
@@ -82,6 +85,16 @@ a.link{color:var(--accent);font-weight:700}
 .linkcards a{display:block;text-decoration:none;color:var(--text);background:var(--soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;line-height:1.5}
 .linkcards a b{color:var(--accent);display:block;font-size:1.05rem}
 .linkcards a:hover{background:var(--code)}
+.katex{font-size:1.06em}
+.eq .katex{font-size:1.12em}
+.katex-display{margin:.2em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+.eq .katex-display{margin:0}
+.tbl{width:100%;border-collapse:collapse;margin:.8em 0;font-size:.97rem}
+.tbl th,.tbl td{border:1px solid var(--line);padding:8px 10px;text-align:center}
+.tbl th{background:var(--soft)}
+.badge{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:700;font-size:.85rem;background:var(--code)}
+.badge.ok{background:var(--true);color:#fff}.badge.no{background:var(--user);color:#fff}
+@media (prefers-color-scheme: dark){.badge.ok,.badge.no{color:#10141c}}
 footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 </style>
 </head>
@@ -90,7 +103,9 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
 <nav class="nav" aria-label="학습 시리즈">
   <a href="index.html">① 정상 작용 원리</a>
   <a href="variational-calculus.html" aria-current="page">② 변분법</a>
-  <a href="path-integral.html">③ 경로적분</a>
+  <a href="constraints-lagrange.html">③ 구속조건·라그랑주 승수</a>
+  <a href="noether.html">④ 뇌터 정리</a>
+  <a href="path-integral.html">⑤ 경로적분</a>
 </nav>
 <header>
   <h1>📐 변분법: “경로 전체”를 바꿔 가며 최적을 찾는 수학</h1>
@@ -101,85 +116,85 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
   <h2>3줄 요약</h2>
   <ol>
     <li>변분법은 <b>함수(경로) 하나를 넣으면 숫자 하나가 나오는 “범함수”</b>의 최솟값·정상점을 찾는 수학이에요.</li>
-    <li>경로를 아주 조금 흔들어도 값이 변하지 않을 조건(첫 번째 변분 = 0)을 정리하면 <b>오일러–라그랑주 방정식</b> d/dx(∂F/∂y′) − ∂F/∂y = 0 이 나와요.</li>
-    <li>이 식 하나로 직선(최단경로), 사이클로이드(최단 시간 곡선), 뉴턴의 F = ma가 모두 나오고, 컴퓨터로는 경로를 점으로 쪼개 경사하강법으로도 풀 수 있어요.</li>
+    <li>경로를 아주 조금 흔들어도 값이 변하지 않을 조건(첫 번째 변분 $=0$)을 정리하면 <b>오일러–라그랑주 방정식</b> $\dfrac{d}{dx}\dfrac{\partial F}{\partial y'} - \dfrac{\partial F}{\partial y} = 0$ 이 나와요.</li>
+    <li>이 식 하나로 직선(최단경로), 사이클로이드(최단 시간 곡선), 뉴턴의 $F = ma$가 모두 나오고, 컴퓨터로는 경로를 점으로 쪼개 경사하강법으로도 풀 수 있어요.</li>
   </ol>
 </div>
 
 <section id="pre">
   <h2><span class="num">1</span>먼저 알아둘 것: 함수와 범함수</h2>
   <ul>
-    <li><span class="term">함수</span>는 <b>숫자를 넣으면 숫자가 나오는</b> 규칙이에요. 예: <i class="v">f(x) = x²</i>에 3을 넣으면 9.</li>
-    <li><span class="term">범함수(functional)</span>는 <b>함수(=경로, 곡선)를 통째로 넣으면 숫자 하나가 나오는</b> 규칙이에요. 대괄호로 <i class="v">J[y]</i>처럼 써요. 예: 곡선의 길이<br>
-      <span class="eq" style="display:block">J[y] = ∫ √(1 + y′²) dx</span>
-      <i class="v">y′ = dy/dx</i>는 곡선의 기울기예요. 곡선 모양이 달라지면 길이도 달라지죠. 그래서 “곡선 → 길이(숫자)”인 범함수예요.</li>
-    <li>앞 페이지의 <b>작용 S</b>도 범함수예요. 경로 y(t)를 넣으면 숫자 S가 나와요.</li>
+    <li><span class="term">함수</span>는 <b>숫자를 넣으면 숫자가 나오는</b> 규칙이에요. 예: $f(x) = x^2$에 $3$을 넣으면 $9$.</li>
+    <li><span class="term">범함수(functional)</span>는 <b>함수(=경로, 곡선)를 통째로 넣으면 숫자 하나가 나오는</b> 규칙이에요. 대괄호로 $J[y]$처럼 써요. 예: 곡선의 길이
+      <div class="eq">$$J[y] = \int \sqrt{1 + y'^2}\,dx$$</div>
+      $y' = \dfrac{dy}{dx}$는 곡선의 기울기예요. 곡선 모양이 달라지면 길이도 달라지죠. 그래서 “곡선 → 길이(숫자)”인 범함수예요.</li>
+    <li>앞 페이지의 <b>작용 $S$</b>도 범함수예요. 경로 $y(t)$를 넣으면 숫자 $S$가 나와요.</li>
   </ul>
-  <p>보통 함수의 최솟값은 <i class="v">f′(x) = 0</i>인 점에서 찾죠. 범함수에서는 “x를 조금 움직이기” 대신 “<b>경로를 조금 흔들기</b>”를 해요. 그게 다음 장의 주제예요.</p>
+  <p>보통 함수의 최솟값은 $f'(x) = 0$인 점에서 찾죠. 범함수에서는 “$x$를 조금 움직이기” 대신 “<b>경로를 조금 흔들기</b>”를 해요. 그게 다음 장의 주제예요.</p>
 </section>
 
 <section id="variation">
   <h2><span class="num">2</span>첫 번째 변분이란?</h2>
-  <p>후보 경로 y(x)에 작은 흔들림을 더해 볼게요.</p>
-  <div class="eq">y<sub>ε</sub>(x) = y(x) + ε·η(x)<small>η(에타)는 흔들림의 모양, ε(엡실론)은 흔들림의 크기를 정하는 작은 수</small></div>
-  <p>양 끝점은 고정이라서 <b>η(a) = η(b) = 0</b>이어야 해요. 이제 <i class="v">J(ε) = J[y + εη]</i>는 ε 하나만의 평범한 함수가 돼요. 그래서 평범한 미분을 쓸 수 있어요.</p>
-  <div class="eq">δJ = dJ/dε |<sub>ε=0</sub><small>첫 번째 변분(first variation): 흔들림을 “1차로” 느끼는 정도</small></div>
-  <p>y가 정상점(최솟값 포함)이라면 어떤 흔들림 η를 줘도 <b>δJ = 0</b>이어야 해요. 골짜기 바닥에서는 어느 방향으로 살짝 움직여도 높이가 1차로는 안 변하는 것과 같아요. 이 δJ를 “η 앞의 계수”로 읽은 것이 <span class="term">범함수 도함수</span> δJ/δy예요: <i class="v">δJ = ∫ (δJ/δy)·η dx</i>.</p>
+  <p>후보 경로 $y(x)$에 작은 흔들림을 더해 볼게요.</p>
+  <div class="eq">$$y_\varepsilon(x) = y(x) + \varepsilon\,\eta(x)$$<small>$\eta$(에타)는 흔들림의 모양, $\varepsilon$(엡실론)은 흔들림의 크기를 정하는 작은 수</small></div>
+  <p>양 끝점은 고정이라서 <b>$\eta(a) = \eta(b) = 0$</b>이어야 해요. 이제 $J(\varepsilon) = J[y + \varepsilon\eta]$는 $\varepsilon$ 하나만의 평범한 함수가 돼요. 그래서 평범한 미분을 쓸 수 있어요.</p>
+  <div class="eq">$$\delta J = \left.\frac{dJ}{d\varepsilon}\right|_{\varepsilon = 0}$$<small>첫 번째 변분(first variation): 흔들림을 “1차로” 느끼는 정도</small></div>
+  <p>$y$가 정상점(최솟값 포함)이라면 어떤 흔들림 $\eta$를 줘도 <b>$\delta J = 0$</b>이어야 해요. 골짜기 바닥에서는 어느 방향으로 살짝 움직여도 높이가 1차로는 안 변하는 것과 같아요. 이 $\delta J$를 “$\eta$ 앞의 계수”로 읽은 것이 <span class="term">범함수 도함수</span> $\dfrac{\delta J}{\delta y}$예요: $\delta J = \displaystyle\int \frac{\delta J}{\delta y}\,\eta\,dx$.</p>
 </section>
 
 <section id="el">
   <h2><span class="num">3</span>오일러–라그랑주 방정식, 한 단계씩 유도하기</h2>
-  <p>범함수가 <i class="v">J[y] = ∫<sub>a</sub><sup>b</sup> F(x, y, y′) dx</i> 꼴이라고 해 볼게요. (F는 x, y, y′로 이루어진 식. 작용에서는 F가 L = T − V예요.)</p>
+  <p>범함수가 $J[y] = \displaystyle\int_a^b F(x, y, y')\,dx$ 꼴이라고 해 볼게요. ($F$는 $x$, $y$, $y'$로 이루어진 식. 작용에서는 $F$가 $L = T - V$예요.)</p>
 
-  <div class="step"><h3>단계 1 — 흔든 경로를 넣고 ε로 미분</h3>
-    <div class="eq">dJ/dε |<sub>ε=0</sub> = ∫ [ (∂F/∂y)·η + (∂F/∂y′)·η′ ] dx<small>합성함수의 미분(연쇄법칙): y가 η만큼, y′가 η′만큼 변하니까 두 항이 생겨요. ∂는 “다른 변수는 고정하고 한 변수로만 미분”이라는 기호예요.</small></div></div>
+  <div class="step"><h3>단계 1 — 흔든 경로를 넣고 $\varepsilon$로 미분</h3>
+    <div class="eq">$$\left.\frac{dJ}{d\varepsilon}\right|_{\varepsilon=0} = \int_a^b \left[\frac{\partial F}{\partial y}\,\eta + \frac{\partial F}{\partial y'}\,\eta'\right] dx$$<small>합성함수의 미분(연쇄법칙): $y$가 $\eta$만큼, $y'$가 $\eta'$만큼 변하니까 두 항이 생겨요. $\partial$는 “다른 변수는 고정하고 한 변수로만 미분”이라는 기호예요.</small></div></div>
 
   <div class="step"><h3>단계 2 — 둘째 항에 부분적분</h3>
-    <p>η′가 거슬리니 η만 남기고 싶어요. 부분적분 공식 <i class="v">∫u v′ = [uv] − ∫u′v</i>를 쓰면</p>
-    <div class="eq">∫ (∂F/∂y′)·η′ dx = [ (∂F/∂y′)·η ]<sub>a</sub><sup>b</sup> − ∫ d/dx(∂F/∂y′)·η dx</div></div>
+    <p>$\eta'$가 거슬리니 $\eta$만 남기고 싶어요. 부분적분 공식 $\int u\,v' = [uv] - \int u'\,v$를 쓰면</p>
+    <div class="eq">$$\int_a^b \frac{\partial F}{\partial y'}\,\eta'\,dx = \left[\frac{\partial F}{\partial y'}\,\eta\right]_a^b - \int_a^b \frac{d}{dx}\!\left(\frac{\partial F}{\partial y'}\right)\eta\,dx$$</div></div>
 
   <div class="step"><h3>단계 3 — 경계항이 사라진다</h3>
-    <p>양 끝에서 η(a) = η(b) = 0이므로 대괄호 항은 0이에요. 그래서</p>
-    <div class="eq">δJ = ∫ [ ∂F/∂y − d/dx(∂F/∂y′) ]·η dx = 0</div></div>
+    <p>양 끝에서 $\eta(a) = \eta(b) = 0$이므로 대괄호 항은 $0$이에요. 그래서</p>
+    <div class="eq">$$\delta J = \int_a^b \left[\frac{\partial F}{\partial y} - \frac{d}{dx}\!\left(\frac{\partial F}{\partial y'}\right)\right]\eta\,dx = 0$$</div></div>
 
   <div class="step"><h3>단계 4 — 기본 보조정리</h3>
-    <p><b>기본 보조정리</b>: 연속함수 g(x)가 끝점에서 0인 <b>모든</b> η에 대해 <i class="v">∫ g·η dx = 0</i>이면 g(x) ≡ 0이에요. 이유는 간단해요. 어떤 점 x₀에서 g(x₀) &gt; 0이라면, x₀ 근처에서만 양수이고 나머지는 0인 작은 “혹” 모양 η를 고를 수 있어요. 그러면 적분이 양수가 되어 모순이죠(g &lt; 0도 마찬가지).</p></div>
+    <p><b>기본 보조정리</b>: 연속함수 $g(x)$가 끝점에서 $0$인 <b>모든</b> $\eta$에 대해 $\displaystyle\int g\,\eta\,dx = 0$이면 $g(x) \equiv 0$이에요. 이유는 간단해요. 어떤 점 $x_0$에서 $g(x_0) \gt 0$이라면, $x_0$ 근처에서만 양수이고 나머지는 $0$인 작은 “혹” 모양 $\eta$를 고를 수 있어요. 그러면 적분이 양수가 되어 모순이죠($g \lt 0$도 마찬가지).</p></div>
 
   <div class="step"><h3>결과</h3>
-    <div class="eq" style="font-size:1.25rem">∂F/∂y − d/dx ( ∂F/∂y′ ) = 0<small>오일러–라그랑주(Euler–Lagrange) 방정식</small></div>
-    <p>역학에서는 독립변수가 시간 t, 경로가 q(t), F가 L(q, q̇, t)예요. 그래서 <i class="v">∂L/∂q − d/dt(∂L/∂q̇) = 0</i> (q̇ = dq/dt)로 써요.</p></div>
+    <div class="eq">$$\frac{\partial F}{\partial y} - \frac{d}{dx}\!\left(\frac{\partial F}{\partial y'}\right) = 0$$<small>오일러–라그랑주(Euler–Lagrange) 방정식</small></div>
+    <p>역학에서는 독립변수가 시간 $t$, 경로가 $q(t)$, $F$가 $L(q, \dot q, t)$예요. 그래서 $\dfrac{\partial L}{\partial q} - \dfrac{d}{dt}\dfrac{\partial L}{\partial \dot q} = 0$ ($\dot q = dq/dt$)로 써요.</p></div>
 </section>
 
 <section id="exA">
   <h2><span class="num">4</span>예제 (a) 두 점 사이의 최단경로는 직선</h2>
-  <p>길이 범함수의 F는 <i class="v">F = √(1 + y′²)</i>예요. y가 직접 안 들어 있으니 <i class="v">∂F/∂y = 0</i>이고, <i class="v">∂F/∂y′ = y′ / √(1 + y′²)</i>예요. 오일러–라그랑주는</p>
-  <div class="eq">d/dx [ y′ / √(1 + y′²) ] = 0 &nbsp;⟹&nbsp; y′ / √(1 + y′²) = 상수 &nbsp;⟹&nbsp; y′ = 상수</div>
-  <p>기울기가 일정한 곡선은 <b>직선</b>이에요. 확인해 볼까요? 점 (0,0)에서 (1,1)까지, 직선 <i class="v">y = x</i>에 사인 모양 흔들림 두 개를 더해 보세요.</p>
+  <p>길이 범함수의 $F$는 $F = \sqrt{1 + y'^2}$예요. $y$가 직접 안 들어 있으니 $\dfrac{\partial F}{\partial y} = 0$이고, $\dfrac{\partial F}{\partial y'} = \dfrac{y'}{\sqrt{1 + y'^2}}$예요. 오일러–라그랑주는</p>
+  <div class="eq">$$\frac{d}{dx}\!\left[\frac{y'}{\sqrt{1 + y'^2}}\right] = 0 \;\Longrightarrow\; \frac{y'}{\sqrt{1 + y'^2}} = \text{상수} \;\Longrightarrow\; y' = \text{상수}$$</div>
+  <p>기울기가 일정한 곡선은 <b>직선</b>이에요. 확인해 볼까요? 점 $(0,0)$에서 $(1,1)$까지, 직선 $y = x$에 사인 모양 흔들림 두 개를 더해 보세요.</p>
   <canvas id="cA" width="800" height="440" role="img" aria-label="직선과 흔든 곡선의 길이 비교"></canvas>
-  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>직선 y = x</span><span><b style="border-color:var(--user)"></b>흔든 곡선</span></div>
-  <div class="sl"><label for="eA1">흔들림 1: ε₁·sin(πx) <span class="val" id="eA1v">0.00</span></label><input type="range" id="eA1" min="-0.6" max="0.6" step="0.01" value="0.25"></div>
-  <div class="sl"><label for="eA2">흔들림 2: ε₂·sin(2πx) <span class="val" id="eA2v">0.00</span></label><input type="range" id="eA2" min="-0.6" max="0.6" step="0.01" value="0"></div>
+  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>직선 $y = x$</span><span><b style="border-color:var(--user)"></b>흔든 곡선</span></div>
+  <div class="sl"><label for="eA1"><span>흔들림 1: $\varepsilon_1 \sin(\pi x)$</span> <span class="val" id="eA1v">0.00</span></label><input type="range" id="eA1" min="-0.6" max="0.6" step="0.01" value="0.25"></div>
+  <div class="sl"><label for="eA2"><span>흔들림 2: $\varepsilon_2 \sin(2\pi x)$</span> <span class="val" id="eA2v">0.00</span></label><input type="range" id="eA2" min="-0.6" max="0.6" step="0.01" value="0"></div>
   <div class="readout" aria-live="polite">
-    <div><div class="lab">곡선의 길이 J</div><div class="num" id="LA">—</div></div>
-    <div><div class="lab">직선의 길이 √2</div><div class="num" id="LA0">—</div></div>
-    <div><div class="lab">차이 J − √2</div><div class="num" id="dLA">—</div></div>
-    <div><div class="lab">첫 번째 변분 (중심차분)</div><div class="num" id="vA" style="font-size:1rem">—</div></div>
+    <div><div class="lab">곡선의 길이 $J$</div><div class="num" id="LA">—</div></div>
+    <div><div class="lab">직선의 길이 $\sqrt2$</div><div class="num" id="LA0">—</div></div>
+    <div><div class="lab">차이 $J - \sqrt2$</div><div class="num" id="dLA">—</div></div>
+    <div><div class="lab">첫 번째 변분 $\delta J$ (중심차분)</div><div class="num" id="vA" style="font-size:1rem">—</div></div>
   </div>
   <p class="verdict" id="verdictA"></p>
-  <p>어떻게 흔들어도 길이는 √2 ≈ 1.41421보다 길어져요. 또 맨 오른쪽 숫자처럼 <b>직선에서의 첫 번째 변분은 0</b>이에요(ε를 +와 −로 흔든 값을 비교해 구한 기울기). 길이는 ε에 대해 U자 모양이라 바닥에서 평평하죠.</p>
+  <p>어떻게 흔들어도 길이는 $\sqrt2 \approx 1.41421$보다 길어져요. 또 맨 오른쪽 숫자처럼 <b>직선에서의 첫 번째 변분은 $0$</b>이에요($\varepsilon$를 $+$와 $-$로 흔든 값을 비교해 구한 기울기). 길이는 $\varepsilon$에 대해 U자 모양이라 바닥에서 평평하죠.</p>
 </section>
 
 <section id="exB">
   <h2><span class="num">5</span>예제 (b) 최단 시간 곡선(브라키스토크론)</h2>
   <p>높은 점 A에서 공을 가만히 놓아 낮은 점 B까지 미끄러뜨릴 때, <b>어떤 곡선이 가장 빨리 도착할까요?</b> 직선이 가장 짧긴 하지만 가장 빠르진 않아요. 처음에 가파르게 내려가 속도를 붙이는 게 이득이거든요.</p>
-  <p>A를 원점으로, 아래쪽을 +y로 잡아요. 에너지 보존으로 y만큼 내려온 공의 속력은 <i class="v">v = √(2gy)</i>이고, 짧은 길이 ds를 지나는 시간은 ds/v예요. 그래서 걸리는 시간은 범함수</p>
-  <div class="eq">T[y] = ∫ √(1 + y′²) / √(2 g y) dx</div>
-  <p>예요. 여기서 F에는 x가 직접 들어 있지 않아서 오일러–라그랑주를 한 번 적분한 <span class="term">벨트라미 항등식</span> <i class="v">F − y′·∂F/∂y′</i> = 상수를 쓸 수 있어요. 풀면 <b>사이클로이드</b>(굴러가는 바퀴 테두리의 한 점이 그리는 곡선)가 나와요.</p>
-  <div class="eq">x = r(θ − sin θ), &nbsp; y = r(1 − cos θ)<small>θ는 바퀴가 구른 각도, r은 바퀴 반지름. 끝점 B에 맞게 r과 θ<sub>B</sub>를 정해요. 걸리는 시간은 θ<sub>B</sub>·√(r/g)</small></div>
-  <p>아래에서 A(0, 0) → B(2 m, 1 m)로 내려가는 세 경로를 비교해 보세요. <span style="color:var(--user);font-weight:700">빨간 곡선</span>은 <i class="v">y = 1·(x/2)<sup>p</sup></i> 꼴이고 p로 모양을 바꿔요(p = 1이면 직선, p &lt; 1이면 처음이 가파른 곡선). 시간은 위 범함수 T[y]를 수치 적분해서 구해요.</p>
+  <p>A를 원점으로, 아래쪽을 $+y$로 잡아요. 에너지 보존으로 $y$만큼 내려온 공의 속력은 $v = \sqrt{2gy}$이고, 짧은 길이 $ds$를 지나는 시간은 $ds/v$예요. 그래서 걸리는 시간은 범함수</p>
+  <div class="eq">$$T[y] = \int \frac{\sqrt{1 + y'^2}}{\sqrt{2 g y}}\,dx$$</div>
+  <p>예요. 여기서 $F$에는 $x$가 직접 들어 있지 않아서 오일러–라그랑주를 한 번 적분한 <span class="term">벨트라미 항등식</span> $F - y'\dfrac{\partial F}{\partial y'} = \text{상수}$를 쓸 수 있어요. 풀면 <b>사이클로이드</b>(굴러가는 바퀴 테두리의 한 점이 그리는 곡선)가 나와요.</p>
+  <div class="eq">$$x = r(\theta - \sin\theta), \qquad y = r(1 - \cos\theta)$$<small>$\theta$는 바퀴가 구른 각도, $r$은 바퀴 반지름. 끝점 B에 맞게 $r$과 $\theta_B$를 정해요. 걸리는 시간은 $\theta_B\sqrt{r/g}$</small></div>
+  <p>아래에서 A$(0, 0)$ → B$(2\ \text{m},\ 1\ \text{m})$로 내려가는 세 경로를 비교해 보세요. <span style="color:var(--user);font-weight:700">빨간 곡선</span>은 $y = (x/2)^p$ 꼴이고 $p$로 모양을 바꿔요($p = 1$이면 직선, $p \lt 1$이면 처음이 가파른 곡선). 시간은 위 범함수 $T[y]$를 수치 적분해서 구해요.</p>
   <canvas id="cB" width="800" height="420" role="img" aria-label="직선, 거듭제곱 곡선, 사이클로이드를 따라 내려가는 공"></canvas>
-  <div class="legend"><span><b style="border-color:var(--accent)"></b>직선</span><span><b style="border-color:var(--user)"></b>내 곡선 (y = (x/2)<sup>p</sup>)</span><span><b style="border-color:var(--true)"></b>사이클로이드</span><span>가로 x(m), 아래쪽이 +y(m)</span></div>
-  <div class="sl"><label for="pB">경로 파라미터 p <span class="val" id="pBv">0.50</span></label><input type="range" id="pB" min="0.3" max="1.8" step="0.01" value="0.5"></div>
+  <div class="legend"><span><b style="border-color:var(--accent)"></b>직선</span><span><b style="border-color:var(--user)"></b>내 곡선 ($y = (x/2)^p$)</span><span><b style="border-color:var(--true)"></b>사이클로이드</span><span>가로 $x$(m), 아래쪽이 $+y$(m)</span></div>
+  <div class="sl"><label for="pB"><span>경로 파라미터 $p$</span> <span class="val" id="pBv">0.50</span></label><input type="range" id="pB" min="0.3" max="1.8" step="0.01" value="0.5"></div>
   <div class="btns"><button class="primary" id="raceBtn" type="button">▶ 공 굴려 보기 (0.5배속)</button><button id="raceReset" type="button">처음으로</button></div>
   <div class="readout" aria-live="polite">
     <div><div class="lab" style="color:var(--accent)">직선 걸리는 시간</div><div class="num" id="tLine">—</div></div>
@@ -188,71 +203,82 @@ footer{color:var(--muted);font-size:.85rem;text-align:center;margin-top:28px}
     <div><div class="lab">경주 시계</div><div class="num" id="clockB">0.000 s</div></div>
   </div>
   <p class="verdict" id="verdictB"></p>
-  <p>p를 어떻게 바꿔도 사이클로이드(초록)보다 빠른 곡선은 없어요. 사이클로이드는 이 예에서 B보다 살짝 더 내려갔다가 올라오는데도 가장 빨라요. 속도를 일찍 얻는 이득이 더 크기 때문이에요.</p>
+  <p>$p$를 어떻게 바꿔도 사이클로이드(초록)보다 빠른 곡선은 없어요. 사이클로이드는 이 예에서 B보다 살짝 더 내려갔다가 올라오는데도 가장 빨라요. 속도를 일찍 얻는 이득이 더 크기 때문이에요.</p>
 </section>
 
 <section id="exC">
-  <h2><span class="num">6</span>예제 (c) 라그랑지안에서 F = ma 되찾기</h2>
-  <p>한 방향으로 움직이는 질량 m인 입자를 생각해요. <i class="v">L = T − V = ½·m·ẋ² − V(x)</i>. 오일러–라그랑주(<i class="v">∂L/∂x − d/dt(∂L/∂ẋ) = 0</i>)의 두 조각은</p>
-  <div class="eq">∂L/∂ẋ = m·ẋ, &nbsp;&nbsp; ∂L/∂x = −V′(x)</div>
-  <p>이니까 식에 넣으면 <i class="v">−V′(x) − d/dt(m·ẋ) = 0</i>, 즉</p>
-  <div class="eq" style="font-size:1.25rem">m·ẍ = −V′(x) = F<small>뉴턴의 운동법칙! (힘 F는 위치에너지를 내리막 방향으로 미분한 것)</small></div>
+  <h2><span class="num">6</span>예제 (c) 라그랑지안에서 $F = ma$ 되찾기</h2>
+  <p>한 방향으로 움직이는 질량 $m$인 입자를 생각해요. $L = T - V = \tfrac12 m\dot x^2 - V(x)$. 오일러–라그랑주($\dfrac{\partial L}{\partial x} - \dfrac{d}{dt}\dfrac{\partial L}{\partial \dot x} = 0$)의 두 조각은</p>
+  <div class="eq">$$\frac{\partial L}{\partial \dot x} = m\dot x, \qquad \frac{\partial L}{\partial x} = -V'(x)$$</div>
+  <p>이니까 식에 넣으면 $-V'(x) - \dfrac{d}{dt}(m\dot x) = 0$, 즉</p>
+  <div class="eq">$$m\ddot x = -V'(x) = F$$<small>뉴턴의 운동법칙! (힘 $F$는 위치에너지를 내리막 방향으로 미분한 것)</small></div>
   <ul>
-    <li><b>자유입자</b> (V = 0): <i class="v">m·ẍ = 0</i>. 가속도가 0이니 등속직선운동이에요.</li>
-    <li><b>용수철</b> (V = ½kx²): <i class="v">m·ẍ = −k·x</i>. 단순조화진동이에요. 해는 <i class="v">x = A·cos(ωt + φ), ω = √(k/m)</i>.</li>
-    <li><b>중력</b> (V = m·g·y): <i class="v">ÿ = −g</i>. 앞 페이지의 포물선이 바로 이 식의 해예요.</li>
+    <li><b>자유입자</b> ($V = 0$): $m\ddot x = 0$. 가속도가 $0$이니 등속직선운동이에요.</li>
+    <li><b>용수철</b> ($V = \tfrac12 k x^2$): $m\ddot x = -kx$. 단순조화진동이에요. 해는 $x = A\cos(\omega t + \varphi)$, $\omega = \sqrt{k/m}$.</li>
+    <li><b>중력</b> ($V = mgy$): $\ddot y = -g$. 앞 페이지의 포물선이 바로 이 식의 해예요.</li>
   </ul>
 </section>
 
 <section id="gd">
   <h2><span class="num">7</span>컴퓨터로 해 보기: 경로를 점으로 쪼개 경사하강법</h2>
-  <p>컴퓨터는 연속 경로를 다룰 수 없어서 <b>N개 구간</b>으로 쪼개요. 시간 0~2초를 같은 간격 Δt로 나누고, 각 점의 높이 y₀, y₁, …, y<sub>N</sub>를 변수로 삼아요(양 끝 y₀ = y<sub>N</sub> = 0 고정). 작용은 이렇게 근사해요.</p>
-  <div class="eq" style="white-space:normal">S ≈ Σ Δt·[ ½m·((y<sub>i+1</sub> − y<sub>i</sub>)/Δt)² − m·g·(y<sub>i</sub> + y<sub>i+1</sub>)/2 ]</div>
-  <p>이제 S는 N − 1개 변수의 평범한 함수예요. 평범한 함수니까 <span class="term">경사하강법</span>(기울기의 반대 방향으로 조금씩 내려가기)을 쓸 수 있어요. 각 점의 기울기는 <i class="v">∂S/∂y<sub>i</sub> = (m/Δt)(2y<sub>i</sub> − y<sub>i−1</sub> − y<sub>i+1</sub>) − m·g·Δt</i>이고, 이 값이 0이라는 것은 <i class="v">(y<sub>i+1</sub> − 2y<sub>i</sub> + y<sub>i−1</sub>)/Δt² = −g</i>, 즉 “가속도 = −g”의 이산 버전이에요. 오일러–라그랑주 방정식이 그대로 나타나죠!</p>
+  <p>컴퓨터는 연속 경로를 다룰 수 없어서 <b>$N$개 구간</b>으로 쪼개요. 시간 $0$~$2$초를 같은 간격 $\Delta t$로 나누고, 각 점의 높이 $y_0, y_1, \dots, y_N$를 변수로 삼아요(양 끝 $y_0 = y_N = 0$ 고정). 작용은 이렇게 근사해요.</p>
+  <div class="eq">$$S \approx \sum_{i=0}^{N-1} \Delta t\left[\frac{m}{2}\left(\frac{y_{i+1} - y_i}{\Delta t}\right)^2 - m g\,\frac{y_i + y_{i+1}}{2}\right]$$</div>
+  <p>이제 $S$는 $N - 1$개 변수의 평범한 함수예요. 평범한 함수니까 <span class="term">경사하강법</span>(기울기의 반대 방향으로 조금씩 내려가기)을 쓸 수 있어요. 각 점의 기울기는</p>
+  <div class="eq">$$\frac{\partial S}{\partial y_i} = \frac{m}{\Delta t}\left(2y_i - y_{i-1} - y_{i+1}\right) - m g\,\Delta t$$</div>
+  <p>이고, 이 값이 $0$이라는 것은 $\dfrac{y_{i+1} - 2y_i + y_{i-1}}{\Delta t^2} = -g$, 즉 “가속도 $= -g$”의 이산 버전이에요. 오일러–라그랑주 방정식이 그대로 나타나죠!</p>
   <canvas id="cG" width="800" height="380" role="img" aria-label="무작위 경로가 경사하강법으로 포물선에 가까워지는 모습"></canvas>
-  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로(포물선)</span><span><b style="border-color:var(--user)"></b>현재 경로(점 = 변수 y<sub>i</sub>)</span></div>
-  <div class="sl"><label for="nG">점 개수(구간 수) N <span class="val" id="nGv">24</span></label><input type="range" id="nG" min="6" max="100" step="1" value="24"></div>
-  <div class="sl"><label for="spG">재생 속도 <span class="val" id="spGv">3</span></label><input type="range" id="spG" min="1" max="20" step="1" value="3"></div>
+  <div class="legend"><span><b style="border-color:var(--true);border-top-style:dashed"></b>진짜 경로(포물선)</span><span><b style="border-color:var(--user)"></b>현재 경로(점 = 변수 $y_i$)</span></div>
+  <div class="sl"><label for="nG"><span>점 개수(구간 수) $N$</span> <span class="val" id="nGv">24</span></label><input type="range" id="nG" min="6" max="100" step="1" value="24"></div>
+  <div class="sl"><label for="spG"><span>재생 속도</span> <span class="val" id="spGv">3</span></label><input type="range" id="spG" min="1" max="20" step="1" value="3"></div>
   <div class="btns"><button class="primary" id="gStart" type="button">▶ 시작</button><button id="gPause" type="button">⏸ 일시정지</button><button id="gReset" type="button">↺ 새 무작위 경로</button></div>
   <div class="readout" aria-live="polite">
     <div><div class="lab">반복 횟수</div><div class="num" id="gIt">0</div></div>
-    <div><div class="lab">현재 작용 S</div><div class="num" id="gS">—</div></div>
-    <div><div class="lab">최솟값 S* (포물선)</div><div class="num" id="gS0">—</div></div>
+    <div><div class="lab">현재 작용 $S$</div><div class="num" id="gS">—</div></div>
+    <div><div class="lab">최솟값 $S^*$ (포물선)</div><div class="num" id="gS0">—</div></div>
     <div><div class="lab">진짜 경로와 최대 차이</div><div class="num" id="gDev">—</div></div>
   </div>
   <p class="verdict" id="verdictG"></p>
-  <div class="note">N이 클수록 정확하지만 큰 흔들림을 펴는 데 더 오래 걸려요(경사하강법은 부드러운 큰 굽이를 가장 늦게 펴요). 이 방법은 <b>S가 최소인 경우</b>에만 쓸 수 있는 방법이에요. 정상점이 최솟값이 아닐 때(안장점)는 다른 방법(예: 뉴턴법)이 필요해요.</div>
+  <div class="note">$N$이 클수록 정확하지만 큰 흔들림을 펴는 데 더 오래 걸려요(경사하강법은 부드러운 큰 굽이를 가장 늦게 펴요). 이 방법은 <b>$S$가 최소인 경우</b>에만 쓸 수 있는 방법이에요. 정상점이 최솟값이 아닐 때(안장점)는 다른 방법(예: 뉴턴법)이 필요해요.</div>
 </section>
 
 <section id="next">
   <h2><span class="num">8</span>다음 단계</h2>
   <ul>
-    <li><b>구속조건과 라그랑주 승수</b>: “길이가 일정한 줄이 만드는 모양(현수선)”처럼 조건이 붙은 문제는 조건 × 승수(λ)를 범함수에 더해서 똑같이 풀어요.</li>
-    <li><b>뇌터(Noether) 정리</b>: 작용이 어떤 변환(시간 이동, 공간 이동, 회전)에 대해 변하지 않으면, 그에 대응하는 보존량(에너지, 운동량, 각운동량)이 생겨요.</li>
-    <li>이어서 <a class="link" href="path-integral.html">③ 경로적분</a>에서 양자역학이 이 원리를 어떻게 확장하는지 볼 수 있어요.</li>
+    <li><b>구속조건과 라그랑주 승수</b>: “길이가 일정한 줄이 만드는 모양(현수선)”처럼 조건이 붙은 문제는 조건 $\times$ 승수($\lambda$)를 범함수에 더해서 똑같이 풀어요. → <a class="link" href="constraints-lagrange.html">③ 구속조건과 라그랑주 승수</a></li>
+    <li><b>뇌터(Noether) 정리</b>: 작용이 어떤 변환(시간 이동, 공간 이동, 회전)에 대해 변하지 않으면, 그에 대응하는 보존량(에너지, 운동량, 각운동량)이 생겨요. → <a class="link" href="noether.html">④ 뇌터 정리</a></li>
+    <li>양자역학이 이 원리를 어떻게 확장하는지는 <a class="link" href="path-integral.html">⑤ 경로적분</a>에서 볼 수 있어요.</li>
   </ul>
-</section>
+  <div class="linkcards">
+    <a href="constraints-lagrange.html"><b>③ 구속조건·라그랑주 승수 →</b>구속력과 승수의 의미를 직접 움직여 봐요.</a>
+    <a href="noether.html"><b>④ 뇌터 정리 →</b>대칭과 보존량의 관계.</a>
+    <a href="path-integral.html"><b>⑤ 경로적분 →</b>모든 경로를 더하는 양자역학.</a>
+  </div>
+  </section>
 
 <section id="glossary">
   <h2><span class="num">9</span>용어 정리</h2>
   <dl>
     <dt>함수 / 범함수</dt><dd>함수는 숫자 → 숫자, 범함수는 함수(경로) → 숫자.</dd>
     <dt>변분(variation)</dt><dd>경로를 조금 바꾸는 것, 또는 그에 따른 범함수의 변화.</dd>
-    <dt>첫 번째 변분 δJ</dt><dd>흔들림 크기 ε에 대한 J의 1차 변화율. 정상점에서 0.</dd>
-    <dt>흔들림 η</dt><dd>경로에 더하는 작은 모양. 끝점에서는 0.</dd>
-    <dt>부분적분</dt><dd>미분을 곱의 다른 쪽으로 옮기는 적분 기술. ∫u v′ = [uv] − ∫u′v.</dd>
-    <dt>기본 보조정리</dt><dd>모든 η에 대해 ∫gη = 0이면 g = 0.</dd>
-    <dt>오일러–라그랑주 방정식</dt><dd>정상점이 되기 위한 조건식. ∂F/∂y − d/dx(∂F/∂y′) = 0.</dd>
-    <dt>벨트라미 항등식</dt><dd>F가 x를 직접 포함하지 않을 때 F − y′∂F/∂y′ = 상수.</dd>
+    <dt>첫 번째 변분 $\delta J$</dt><dd>흔들림 크기 $\varepsilon$에 대한 $J$의 1차 변화율. 정상점에서 $0$.</dd>
+    <dt>흔들림 $\eta$</dt><dd>경로에 더하는 작은 모양. 끝점에서는 $0$.</dd>
+    <dt>부분적분</dt><dd>미분을 곱의 다른 쪽으로 옮기는 적분 기술. $\int u v' = [uv] - \int u' v$.</dd>
+    <dt>기본 보조정리</dt><dd>모든 $\eta$에 대해 $\int g\eta = 0$이면 $g = 0$.</dd>
+    <dt>오일러–라그랑주 방정식</dt><dd>정상점이 되기 위한 조건식. $\dfrac{\partial F}{\partial y} - \dfrac{d}{dx}\dfrac{\partial F}{\partial y'} = 0$.</dd>
+    <dt>벨트라미 항등식</dt><dd>$F$가 $x$를 직접 포함하지 않을 때 $F - y'\dfrac{\partial F}{\partial y'} = \text{상수}$.</dd>
     <dt>사이클로이드</dt><dd>굴러가는 바퀴 테두리 한 점의 자취. 최단 시간 곡선.</dd>
     <dt>경사하강법</dt><dd>기울기의 반대 방향으로 조금씩 움직여 최솟값을 찾는 방법.</dd>
-    <dt>구속조건 / 라그랑주 승수</dt><dd>문제에 붙는 제약, 그리고 이를 다루는 도우미 변수 λ.</dd>
+    <dt>구속조건 / 라그랑주 승수</dt><dd>문제에 붙는 제약, 그리고 이를 다루는 도우미 변수 $\lambda$.</dd>
   </dl>
 </section>
 
-<footer>이 페이지는 인터넷 연결 없이 이 파일 하나로 동작해요. · 사용 값: g = 9.8, m = 1</footer>
+<footer>이 페이지는 인터넷 연결 없이 동작해요(수식은 함께 배포된 katex 폴더로 그려요). · 사용 값: $g = 9.8$, $m = 1$</footer>
 
 </main>
+<script>
+(function(){function r(){if(typeof renderMathInElement!=='function')return;try{renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});}catch(e){}}
+window.renderAllMath=r;if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',r);else r();})();
+</script>
 <script>
 //CORE-START
 const G = 9.8, M = 1, TT = 2;
